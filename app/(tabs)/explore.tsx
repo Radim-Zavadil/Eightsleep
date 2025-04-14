@@ -1,8 +1,6 @@
-
 import { StyleSheet, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { BlurView } from 'expo-blur';
 
 interface SensorCardProps {
   icon: any;
@@ -26,9 +24,6 @@ const SensorCard = ({ icon, title, description, category, isActive = false }: Se
       <ThemedText style={styles.cardCategory}>{category}</ThemedText>
       <ThemedText style={styles.cardTitle}>{title}</ThemedText>
       <ThemedText style={styles.cardDescription}>{description}</ThemedText>
-      <TouchableOpacity style={styles.getButton}>
-        <ThemedText style={styles.getButtonText}>Get</ThemedText>
-      </TouchableOpacity>
     </View>
   </View>
 );
@@ -38,10 +33,7 @@ export default function ExploreScreen() {
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <ThemedText style={styles.title}>SENSOR STORE</ThemedText>
-        <Image 
-          source={require('../../assets/images/infoIcon.svg')} 
-          style={styles.infoIcon}
-        />
+        <Image source={require('../../assets/images/infoIcon.svg')} style={styles.infoIcon} />
       </View>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.cardsContainer}>
@@ -173,19 +165,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#808080',
     marginBottom: 16,
-  },
-  getButton: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  getButtonText: {
-    color: '#000000',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  }
 });

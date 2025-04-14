@@ -1,8 +1,27 @@
 
-import { StyleSheet, View, Image } from 'react-native';
+import { StyleSheet, View, Image, ScrollView } from 'react-native';
 import { ThemedText } from './ThemedText';
 import * as Font from 'expo-font';
 import { useEffect } from 'react';
+
+const Widget = ({ icon, title, timer, color }) => (
+  <View style={styles.rectangle}>
+    <View style={styles.leftContent}>
+      <Image 
+        source={icon}
+        style={[styles.icon, { tintColor: color }]}
+      />
+      <View style={styles.textContainer}>
+        <ThemedText style={[styles.title, { color }]}>{title}</ThemedText>
+        <ThemedText style={styles.timer}>{timer}</ThemedText>
+      </View>
+    </View>
+    <Image 
+      source={require('../assets/images/icons/ArrowDown.svg')}
+      style={styles.arrowIcon}
+    />
+  </View>
+);
 
 export function CoffeeTimer() {
   useEffect(() => {
@@ -13,31 +32,57 @@ export function CoffeeTimer() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.rectangle}>
-        <View style={styles.leftContent}>
-          <Image 
-            source={require('../assets/images/cup-of-coffee.png')}
-            style={styles.coffeeIcon}
-          />
-          <View style={styles.textContainer}>
-            <ThemedText style={styles.title}>Active coffee window</ThemedText>
-            <ThemedText style={styles.timer}>01:42:3</ThemedText>
-          </View>
-        </View>
-        <Image 
-          source={require('../assets/images/icons/ArrowDown.svg')}
-          style={styles.arrowIcon}
+      <ScrollView 
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Widget
+          icon={require('../assets/images/cup-of-coffee.png')}
+          title="Active coffee window"
+          timer="01:42:3"
+          color="#00FF75"
         />
-      </View>
+        <Widget
+          icon={require('../assets/images/Eye.svg')}
+          title="Blue light window"
+          timer="1h screen time"
+          color="#9EA7F4"
+        />
+        <Widget
+          icon={require('../assets/images/WaterDrop.svg')}
+          title="Water window"
+          timer="01:42:3"
+          color="#A7E1D3"
+        />
+        <Widget
+          icon={require('../assets/images/Cutlery.svg')}
+          title="Food window"
+          timer="01:42:3"
+          color="#A7E1D3"
+        />
+        <Widget
+          icon={require('../assets/images/SunRiseBottom.svg')}
+          title="Sun rise"
+          timer="01:42:3"
+          color="#FFD9B1"
+        />
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    paddingVertical: 35,
+  },
+  scrollView: {
+    flexGrow: 0,
+  },
+  scrollContent: {
     paddingHorizontal: 20,
-    marginTop: 35,
-    marginBottom: 25,
+    gap: 10,
   },
   rectangle: {
     width: 250,
@@ -56,7 +101,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  coffeeIcon: {
+  icon: {
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -67,7 +112,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 12,
     fontFamily: 'Inter',
-    color: '#00FF75',
   },
   timer: {
     fontSize: 14,
