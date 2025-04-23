@@ -1,22 +1,52 @@
-import { StyleSheet, View, Image, ScrollView, Text } from "react-native";
+import React from 'react';
+
+import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions } from "react-native";
 import { Link } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { CoffeeTimer } from "@/components/CoffeeTimer";
-// import { useSensors } from '../../context/SensorContext'; //Removed
+import { BlurView } from "expo-blur";
+import Svg, { Path, Text as SvgText, Circle, LinearGradient } from 'react-native-svg';
+
+//components
+import CircadianTimer from '../../components/CircadianTimer';
+import * as d3Shape from 'd3-shape';
+import SleepSection from '../../components/SleepSection';
+import RecoverySection from '../../components/RecoverySection';
+import SocialJetLegSection from '../../components/SocialJetLegSection';
+import CaffeineWindowsSection from '@/components/CaffeineWindows';
+import JournalSection from '@/components/JournalSection';
+
+import GradientText from '@/components/ui/GradientText';
+import { Widgets } from "@/components/Widgets";
+import HalfCircleProgress from "@/components/HalfCircleProgress"; // Import the component
+
 
 export default function HomeScreen() {
-  // const { addedSensors } = useSensors(); //Removed
+  
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
         <ThemedText style={styles.yesterdayText}>YESTERDAY</ThemedText>
         <View style={styles.centerContent}>
           <ThemedText style={styles.todayText}>TODAY</ThemedText>
-          <Image
-            source={require("../../assets/images/icons/ArrowDown.svg")}
-            style={styles.arrowIcon}
-          />
+          <svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g filter="url(#filter0_i_697_13817)">
+          <path d="M1 1L6.68966 7L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <defs>
+          <filter id="filter0_i_697_13817" x="0" y="0" width="13" height="8" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset/>
+          <feGaussianBlur stdDeviation="0.35"/>
+          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.72 0"/>
+          <feBlend mode="normal" in2="shape" result="effect1_innerShadow_697_13817"/>
+          </filter>
+          </defs>
+          </svg>
         </View>
         <Link href="/calendar" style={styles.circleContainer}>
           <View style={styles.circle}>
@@ -24,294 +54,34 @@ export default function HomeScreen() {
           </View>
         </Link>
       </View>
-      <CoffeeTimer />
+      <Widgets />
       <ScrollView style={styles.sectionsContainer}>
-        {/* Screentime Section */}
-        {/*Removed Sensor Conditional Rendering */}
 
-        {/* Vitamin D Section */}
-        {/*Removed Sensor Conditional Rendering */}
+        {/**SLEEP SECTION */}
+        <SleepSection />
+        
+        {/**RECOVERY SECTION */}
+        <RecoverySection />
+      
+        {/**JOURNAL */}
+        <JournalSection />
 
-        {/* Caffeine Windows Section */}
-        {/*Removed Sensor Conditional Rendering */}
+        {/*SOCIAL JET LEG */}
+        <SocialJetLegSection />
+        
+        {/*CIRCADIAN RHYTHM */}
+        <CircadianTimer />
 
-        {/* Circadian Rhythm Section */}
-        {/*Removed Sensor Conditional Rendering */}
+        {/*CAFFEINE WINDOWS */}
+        <CaffeineWindowsSection />
 
-        {/* Smart Alarm Section */}
-        {/*Removed Sensor Conditional Rendering */}
-        <View style={styles.section}>
-          <Link href="/sleep" style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>SLEEP</ThemedText>
-            <Image
-              source={require("../../assets/images/ArrowRightGrey.png")}
-              style={styles.arrowRight}
-            />
-          </Link>
-          <View
-            style={[
-              styles.sleepContent,
-              { backgroundColor: "rgba(5, 29, 13, 0.6)" },
-            ]}
-          >
-            <View
-              style={[styles.blurredCircle, { backgroundColor: "#1F9950" }]}
-            />
-            <View style={styles.sectionBadge}>
-              <Text style={styles.badgeText}>SLEEP</Text>
-            </View>
-            <Text style={styles.scoreNumber}>84</Text>
-            <View style={styles.trophyContainer}>
-              <Image
-                source={require("../../assets/images/Trophy.svg")}
-                style={styles.trophyIcon}
-              />
-              <Text style={styles.trophyText}>Highest in last 7 days</Text>
-            </View>
-            <View style={styles.sleepTimeContainer}>
-              <Text style={styles.timeText}>22:00</Text>
-              <Text style={styles.timeText}>10:00</Text>
-            </View>
-            <Text style={styles.sleepDescription}>
-              Optimal deep sleep for physical Recovery
-            </Text>
-            <Text style={styles.sleepSubDescription}>
-              Higher deep sleep helps with physical recovery and immune system
-              health.
-            </Text>
-            <View style={styles.metricsBox}>
-              <View style={styles.durationContainer}>
-                <Text style={styles.durationText}>SLEEP DURATION</Text>
-                <View style={styles.durationValue}>
-                  <Text style={styles.durationNumber}>7h 11m</Text>
-                  <Image
-                    source={require("../../assets/images/GreenCheck.svg")}
-                    style={styles.checkIcon}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Link href="/recovery" style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>RECOVERY</ThemedText>
-            <Image
-              source={require("../../assets/images/ArrowRightGrey.png")}
-              style={styles.arrowRight}
-            />
-          </Link>
-          <View
-            style={[
-              styles.recoveryContent,
-              { backgroundColor: "rgba(29, 19, 0, 0.6)" },
-            ]}
-          >
-            <View
-              style={[styles.blurredCircle, { backgroundColor: "#6B4312" }]}
-            />
-            <View style={styles.sectionBadge}>
-              <Text style={styles.badgeText}>RECOVERY</Text>
-            </View>
-            <Text
-              style={[
-                styles.scoreNumber,
-                { color: "#FFB800", textShadowColor: "rgba(255, 184, 0, 0.3)" },
-              ]}
-            >
-              50
-            </Text>
-            <View style={styles.metricsContainer}>
-              <Text style={styles.metricsText}>1/5</Text>
-              <Text style={styles.metricsSubText}>metrics within range</Text>
-            </View>
-            <View style={styles.metricsBox}>
-              <View style={styles.indicatorRow}>
-                <Image
-                  source={require("../../assets/images/Temperature.svg")}
-                  style={styles.indicatorIcon}
-                />
-                <Text style={[styles.indicatorText, { marginLeft: 8 }]}>
-                  Temp
-                </Text>
-                <Image
-                  source={require("../../assets/images/GreenCheck.svg")}
-                  style={[styles.indicatorCheck, { marginLeft: "auto" }]}
-                />
-              </View>
-              <View style={styles.indicatorRow}>
-                <Image
-                  source={require("../../assets/images/Sun.svg")}
-                  style={styles.indicatorIcon}
-                />
-                <Text style={[styles.indicatorText, { marginLeft: 8 }]}>
-                  Darkness
-                </Text>
-                <Image
-                  source={require("../../assets/images/GreenCheck.svg")}
-                  style={[styles.indicatorCheck, { marginLeft: "auto" }]}
-                />
-              </View>
-              <View style={styles.indicatorRow}>
-                <Image
-                  source={require("../../assets/images/CoffeeBeans.svg")}
-                  style={styles.indicatorIcon}
-                />
-                <Text style={[styles.indicatorText, { marginLeft: 8 }]}>
-                  Caffeine
-                </Text>
-                <Image
-                  source={require("../../assets/images/Attention.svg")}
-                  style={[styles.indicatorCheck, { marginLeft: "auto" }]}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Link href="/journal" style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>JOURNAL</ThemedText>
-            <Image
-              source={require("../../assets/images/ArrowRightGrey.png")}
-              style={styles.arrowRight}
-            />
-          </Link>
-          <View
-            style={[
-              styles.journalContent,
-              { backgroundColor: "rgba(0, 10, 29, 0.6)" },
-            ]}
-          >
-            <View
-              style={[styles.blurredCircle, { backgroundColor: "#1B3366" }]}
-            />
-            <View style={styles.sectionBadge}>
-              <Text style={styles.badgeText}>JOURNAL</Text>
-            </View>
-            <Text style={[styles.scoreNumber, styles.journalNumber]}>95</Text>
-            <Text style={styles.journalText}>Relaxed</Text>
-            <View style={styles.timelineContainer}>
-              <View style={styles.timeline} />
-              <View style={styles.timeMarker} />
-              <View style={styles.timeLabels}>
-                <Text style={styles.timeLabel}>22:00</Text>
-                <Text style={styles.timeLabel}>23:00</Text>
-                <Text style={styles.timeLabel}>00:00</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        <View style={[styles.section, styles.lastSection]}>
-          <View style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>
-              SOCIAL JETLAG · LAST WEEK
-            </ThemedText>
-            <Image
-              source={require("../../assets/images/ArrowRightGrey.png")}
-              style={styles.arrowRight}
-            />
-          </View>
-          <View
-            style={[
-              styles.jetlagContent,
-              {
-                alignItems: "center",
-                backgroundColor: "rgba(15, 15, 15, 0.6)",
-              },
-            ]}
-          >
-            <View
-              style={[styles.blurredCircle, { backgroundColor: "#664B12" }]}
-            />
-            <View style={styles.sectionBadge}>
-              <Text style={styles.badgeText}>SOCIAL JETLAG</Text>
-            </View>
-            <View style={styles.jetlagHeader}>
-              <Text style={styles.jetlagTime}>40m</Text>
-              <Image
-                source={require("../../assets/images/Attention.svg")}
-                style={styles.jetlagIcon}
-              />
-            </View>
-            <Text style={[styles.jetlagType, { textAlign: "center" }]}>
-              Late Weekend Sleeper
-            </Text>
-            <Text style={[styles.jetlagDescription, { textAlign: "center" }]}>
-              You stay up late during weekdays but sleep longer to make up for
-              it. It's like starting your week in Mumbai, but your body
-              sometimes drifts into Dubai time.
-            </Text>
-            <Text style={[styles.jetlagCalibrating, { textAlign: "center" }]}>
-              This week's jetlag calibrating in 7 days
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>CIRCADIAN RHYTHM</ThemedText>
-            <Image source={require("../../assets/images/ArrowRightGrey.png")} style={styles.arrowRight} />
-          </View>
-          <View style={[styles.circadianContent, { backgroundColor: "rgba(29, 0, 58, 0.6)" }]}>
-            <View style={[styles.blurredCircle, { backgroundColor: "#2B0082" }]} />
-            <View style={styles.sectionBadge}>
-              <Text style={styles.badgeText}>CIRCADIAN</Text>
-            </View>
-            <View style={styles.circadianTimer}>
-              <Text style={styles.timerText}>ends in</Text>
-              <Text style={styles.timerValue}>06:36:06</Text>
-            </View>
-            <Text style={styles.circadianDescription}>Start winding down</Text>
-            <Text style={styles.circadianSubDescription}>
-              Avoid bright light exposure during this window as this could move your natural wake up time to later in the day and reduce the energy levels upon wake.
-            </Text>
-          </View>
-        </View>
-
-        <View style={[styles.section, styles.lastSection]}>
-          <View style={styles.sectionHeader}>
-            <ThemedText style={styles.sectionTitle}>CAFFEINE WINDOW</ThemedText>
-            <Image source={require("../../assets/images/ArrowRightGrey.png")} style={styles.arrowRight} />
-          </View>
-          <View style={[styles.caffeineContent, { backgroundColor: "rgba(58, 29, 0, 0.6)" }]}>
-            <View style={[styles.blurredCircle, { backgroundColor: "#823D00" }]} />
-            <View style={styles.sectionBadge}>
-              <Text style={styles.badgeText}>CAFFEINE</Text>
-            </View>
-            <View style={styles.caffeineTimeline}>
-              <View style={styles.timelineContainer}>
-                <View style={styles.timeline}>
-                  <View style={styles.timeMarkerActive} />
-                  <View style={styles.timeMarkerActive} />
-                  <View style={styles.timeMarkerActive} />
-                  <View style={styles.timeMarkerInactive} />
-                  <View style={styles.timeMarkerInactive} />
-                </View>
-                <View style={styles.timeLabels}>
-                  <Text style={styles.timeLabel}>6:14 AM</Text>
-                  <Text style={styles.timeLabel}>11:20 AM</Text>
-                  <Text style={styles.timeLabel}>3:00 PM</Text>
-                  <Text style={styles.timeLabel}>6:40 PM</Text>
-                  <Text style={styles.timeLabel}>11:00 PM</Text>
-                </View>
-              </View>
-            </View>
-            <Text style={styles.caffeineTitle}>Caffeine Restriction Window</Text>
-            <Text style={styles.caffeineDescription}>
-              Avoiding stimulants such as caffeine now will improve your chances of a restful, deep sleep.
-            </Text>
-          </View>
-        </View>
       </ScrollView>
     </ThemedView>
   );
 }
 
-import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur";
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -381,6 +151,8 @@ const styles = StyleSheet.create({
     width: 400,
     backgroundColor: "#0F0F0F",
     borderRadius: 24,
+    borderWidth: 2,
+    borderColor: "#141414",
     marginBottom: 16,
     overflow: "hidden",
     position: "relative",
@@ -389,8 +161,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 16,
     left: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    paddingHorizontal: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 12,
     zIndex: 1,
@@ -405,7 +177,16 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    opacity: 0.4,
+    opacity: 0.1,
+
+    shadowColor: '#1F9950',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 1000,
+
     top: "50%",
     left: "50%",
     transform: [{ translateX: -150 }, { translateY: -150 }],
@@ -686,7 +467,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#00FF75",
     marginBottom: 4,
     marginLeft: "10%",
-    marginRight: "10%"
+    marginRight: "10%",
   },
   timeMarkerInactive: {
     width: 8,
@@ -695,7 +476,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.1)",
     marginBottom: 4,
     marginLeft: "10%",
-    marginRight: "10%"
+    marginRight: "10%",
   },
   caffeineTitle: {
     color: "#FFFFFF",

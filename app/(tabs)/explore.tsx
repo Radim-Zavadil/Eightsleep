@@ -2,31 +2,12 @@ import { StyleSheet, View, Image, ScrollView, TouchableOpacity } from 'react-nat
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-interface SensorCardProps {
-  icon: any;
-  title: string;
-  description: string;
-  category: string;
-  isActive?: boolean;
-}
-
-const SensorCard = ({ icon, title, description, category, isActive = false }: SensorCardProps) => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <View style={styles.iconContainer}>
-        <Image source={icon} style={styles.cardIcon} />
-      </View>
-      <View style={styles.statusContainer}>
-        <ThemedText style={styles.statusText}>{isActive ? 'Active' : 'Inactive'}</ThemedText>
-      </View>
-    </View>
-    <View style={styles.cardContent}>
-      <ThemedText style={styles.cardCategory}>{category}</ThemedText>
-      <ThemedText style={styles.cardTitle}>{title}</ThemedText>
-      <ThemedText style={styles.cardDescription}>{description}</ThemedText>
-    </View>
-  </View>
-);
+//sensors
+import ScreentimeSensor from '@/components/sensors/ScreentimeSensor';
+import VitaminDSensor from '@/components/sensors/VitaminDSensor';
+import CaffeineWindowsSensor from '@/components/sensors/CaffeineWindowsSensor';
+import CircadianRhythmSensor from '@/components/sensors/CircadianRhythmSensor';
+import SmartAlarmSensor from '@/components/sensors/SmartAlarmSensor';
 
 export default function ExploreScreen() {
   return (
@@ -37,40 +18,13 @@ export default function ExploreScreen() {
       </View>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.cardsContainer}>
-          <SensorCard
-            icon={require('../../assets/images/SandClock.svg')}
-            title="Screentime"
-            description="Tracks screen time and its impact on your sleep, offering personalized insights for healthier habits."
-            category="PRODUCTIVITY"
-            isActive={true}
-          />
-          <SensorCard
-            icon={require('../../assets/images/sunRise.svg')}
-            title="Vitamin D"
-            description="Maximize your Vitamin D with smart and personalized suggestions for sun exposure."
-            category="PRODUCTIVITY"
-          />
-          <SensorCard
-            icon={require('../../assets/images/coffeBeans.svg')}
-            title="Caffeine windows"
-            description="Maximize your caffeine intake with smart and personalized suggestions for optimal timing."
-            category="PRODUCTIVITY"
-            isActive={true}
-          />
-          <SensorCard
-            icon={require('../../assets/images/circadianRhythm.svg')}
-            title="Circadian Rhythm"
-            description="Optimize your daily routine with proper eating and exercise throughout a day to ensure better life."
-            category="PERFORMANCE"
-            isActive={true}
-          />
-          <SensorCard
-            icon={require('../../assets/images/Alarm.svg')}
-            title="Smart alarm"
-            description="Optimize your daily routine with proper eating and exercise throughout a day to ensure better life."
-            category="PERFORMANCE"
-            isActive={true}
-          />
+          
+          <ScreentimeSensor />
+          <VitaminDSensor />
+          <CaffeineWindowsSensor />
+          <CircadianRhythmSensor />
+          <SmartAlarmSensor />
+
         </View>
       </ScrollView>
     </ThemedView>
