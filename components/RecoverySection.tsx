@@ -16,7 +16,7 @@ export default function RecoverySection() {
         borderColor: '#444',
         overflow: 'hidden',
         alignItems: 'center',
-        marginTop: 20
+        marginTop: 5
       }}>
         {/* Absolute full-size blur */}
         <View style={{
@@ -37,6 +37,7 @@ export default function RecoverySection() {
           <Text style={{
             color: '#FDCB58',
             fontSize: 60,
+            fontFamily: "Inter",
             textAlign: 'center'
           }}>
             50

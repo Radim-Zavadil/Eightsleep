@@ -3,6 +3,7 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as Font from 'expo-font';
 import { useEffect } from 'react';
+import SunPathCircle from './SunLevels';
 
 const VitaminDWidget = () => {
 
@@ -28,26 +29,12 @@ const VitaminDWidget = () => {
     >
       {/* Icon with circular background */}
       <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginRight: 10 }}>
-            {/* Background glow image */}
-            <Image
-                source={require('../../assets/images/WidgetYellowBlur.png')}
-                style={{
-                position: 'absolute',
-                width: 70,
-                height: 70,
-                resizeMode: 'contain',
-                }}
-            />
-            {/* Cup icon */}
-            <Image
-                source={require('../../assets/images/SunRiseBottom.svg')}
-                style={{
-                width: 20,
-                height: 20,
-                resizeMode: 'contain',
-                marginTop: 22
-                }}
-            />
+            
+
+          <SunPathCircle />
+
+
+            
         </View>
 
 

@@ -16,7 +16,6 @@ const CaffeineWidget = () => {
     <View
       style={{
         height: 62,
-        width: 245,
         backgroundColor: 'black',
         borderWidth: 1,
         borderColor: "#141414",

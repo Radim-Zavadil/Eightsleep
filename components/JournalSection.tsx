@@ -6,13 +6,14 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import * as d3Shape from 'd3-shape';
 import Svg, { Path, Text as SvgText, Circle } from 'react-native-svg';
+import { ChevronRight } from 'react-native-feather';
 
 const { width } = Dimensions.get('window');
 
 export default function JournalSection() {
 
     //STRESS RHYTHM CODE
-  const height = 200;
+  const height = 100;
 
   // Main half-circle-like curve
   const curvePath = `
@@ -22,8 +23,8 @@ export default function JournalSection() {
 
   // Stressed guideline (dotted)
   const guidelinePath = `
-    M 0 ${height - 50}
-    C ${width * 0.25} 10, ${width * 0.75} 10, ${width} ${height - 50}
+    M 0 ${height - 30}
+    C ${width * 0.25} 2, ${width * 0.75} 2, ${width} ${height - 30}
   `;
 
   const times = ['5pm', '6pm', '7pm', '8pm', '9pm', '10pm', '11pm', '12am'];
@@ -70,7 +71,7 @@ export default function JournalSection() {
         overflow: 'hidden',
         alignItems: 'center',
         position: 'relative',
-        marginTop: 20
+        marginTop: 5
       }}>
         {/* Background images */}
         <Image
@@ -90,7 +91,8 @@ export default function JournalSection() {
           color: '#fff',
           fontSize: 12,
           marginTop: 20,
-          opacity: 0.7
+          opacity: 0.7,
+          fontFamily: "Inter"
         }}>STRESS RHYTHM</Text>
 
         <Text style={{
@@ -111,10 +113,11 @@ export default function JournalSection() {
 
           {/* Stressed label */}
           <SvgText
-            x={stressedLabelPos.x}
-            y={stressedLabelPos.y - 5}
+            x={stressedLabelPos.x - 30}
+            y={stressedLabelPos.y - 12}
             fontSize="12"
             fill="#aaa"
+            fontFamily="Inter"
           >
             Stressed
           </SvgText>
@@ -142,10 +145,11 @@ export default function JournalSection() {
               <SvgText
                 key={index}
                 x={x}
-                y={y + 18}
+                y={y + 19.2}
                 fontSize="12"
                 fill="#aaa"
                 textAnchor="middle"
+                fontFamily='Inter'
               >
                 {times[index]}
               </SvgText>

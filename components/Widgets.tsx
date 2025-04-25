@@ -8,12 +8,17 @@ import VitaminDWidget from './widgets/VitaminDWidget';
 
 
 
-export function Widgets() {
+const Widgets = ({ visibleWidgets = {} }) => {
+
+
+
   useEffect(() => {
     Font.loadAsync({
       'DMMono-Regular': require('../assets/fonts/DMMono-Regular.ttf'),
     });
   }, []);
+
+
 
   return (
     <View style={styles.container}>
@@ -24,7 +29,8 @@ export function Widgets() {
         contentContainerStyle={styles.scrollContent}
       >
         
-        <CaffeineWidget />
+        {visibleWidgets.caffeineWindow && <CaffeineWidget />}
+        
         <ScreenTimeWidget />
         <VitaminDWidget />
 
@@ -46,3 +52,5 @@ const styles = StyleSheet.create({
     gap: 10,
   },
 });
+
+export default Widgets;

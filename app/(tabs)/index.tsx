@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions } from "react-native";
 import { Link } from "expo-router";
@@ -16,13 +16,20 @@ import SocialJetLegSection from '../../components/SocialJetLegSection';
 import CaffeineWindowsSection from '@/components/CaffeineWindows';
 import JournalSection from '@/components/JournalSection';
 
+
 import GradientText from '@/components/ui/GradientText';
-import { Widgets } from "@/components/Widgets";
+import Widgets from "@/components/Widgets";
 import HalfCircleProgress from "@/components/HalfCircleProgress"; // Import the component
+import SleepDebtComponent from '../../components/SocialJetLegSection';
+import SmartAlarmCard from '@/components/SmartAlarm';
 
 
 export default function HomeScreen() {
   
+  const [visibleWidgets, setVisibleWidgets] = useState({
+    caffeineWindow: false,
+    // Add other widgets here as needed
+  });
 
   return (
     <ThemedView style={styles.container}>
@@ -59,15 +66,18 @@ export default function HomeScreen() {
 
         {/**SLEEP SECTION */}
         <SleepSection />
+
+        {/*SLEEP DEBT */}
+        <SleepDebtComponent />
+
+        {/**SMART ALARM */}
+        <SmartAlarmCard />
         
         {/**RECOVERY SECTION */}
         <RecoverySection />
       
         {/**JOURNAL */}
         <JournalSection />
-
-        {/*SOCIAL JET LEG */}
-        <SocialJetLegSection />
         
         {/*CIRCADIAN RHYTHM */}
         <CircadianTimer />
@@ -95,8 +105,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   yesterdayText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "500",
     color: "#FFFFFF",
     textShadowColor: "rgba(255, 255, 255, 0.5)",
     textShadowOffset: { width: 0, height: 1 },
@@ -113,8 +123,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   todayText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 13,
+    fontWeight: "500",
     color: "#FFFFFF",
     textShadowColor: "rgba(0, 0, 0, 0.3)",
     textShadowOffset: { width: 0, height: 1 },

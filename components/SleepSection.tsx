@@ -6,6 +6,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
 import Svg, { Path, Text as SvgText, Circle } from 'react-native-svg';
+import ArcGauge from './SleepArc';
+import ActivityGauge from './SleepArc';
 
 export default function SleepSection() {
   return (
@@ -13,12 +15,11 @@ export default function SleepSection() {
         backgroundColor: 'black',
         borderColor: '#444',
         borderWidth: 1,
-        borderRadius: 16,
+        borderRadius: 20,
         overflow: 'hidden',
-        padding: 20,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 20
+        marginTop: 5
       }}>
         {/* Two PNG background images */}
         <Image
@@ -41,31 +42,7 @@ export default function SleepSection() {
           }}
         />
 
-        {/* Circular Arc */}
-        <Svg height="200" width="200" style={{ position: 'absolute', top: 20 }}>
-          <Circle
-            cx="100"
-            cy="100"
-            r="90"
-            stroke="#888"
-            strokeWidth="20"
-            fill="none"
-          />
-          <Circle
-            cx="100"
-            cy="100"
-            r="90"
-            stroke="#00FF88"
-            strokeWidth="20"
-            strokeLinecap="round"
-            strokeDasharray="565"
-            strokeDashoffset="90"
-            fill="none"
-          />
-        </Svg>
-
-        {/* Sleep Score */}
-        <Text style={{ fontSize: 64, color: 'rgba(150, 255, 150, 0.6)', fontWeight: 'normal', marginTop: 60 }}>84</Text>
+          <ArcGauge value={100} />
 
         {/* Trophy Label */}
         <View style={{
@@ -73,7 +50,8 @@ export default function SleepSection() {
           paddingVertical: 4,
           paddingHorizontal: 12,
           borderRadius: 5,
-          marginVertical: 8,
+          marginTop: 1,
+          marginBottom: 10
         }}>
           <Text style={{ color: 'white', fontSize: 12 }}>Highest in last 7 days</Text>
         </View>
@@ -90,7 +68,7 @@ export default function SleepSection() {
         <View style={{
           width: "450px",
           marginTop: 20,
-          paddingVertical: 12,
+          paddingVertical: 17,
           paddingHorizontal: 20,
           borderColor: '#444',
           borderWidth: 1,

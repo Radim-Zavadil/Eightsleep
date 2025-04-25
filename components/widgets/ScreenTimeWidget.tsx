@@ -40,7 +40,7 @@ const ScreenTimeWidget = () => {
             />
             {/* Cup icon */}
             <Image
-                source={require('../../assets/images/Eye.svg')} // replace with your actual icon
+                source={require('../../assets/images/EyeWidget.png')} // replace with your actual icon
                 style={{
                 width: 27,
                 height: 27,

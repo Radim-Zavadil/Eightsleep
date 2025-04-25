@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ImageBackground, Dimensions } from 'react-native';
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import * as d3Shape from 'd3-shape';
+import { ChevronRight } from 'react-native-feather';
 
 const { width } = Dimensions.get('window');
 const size = width * 0.8;
@@ -74,7 +75,8 @@ const CircadianRhythm = () => {
         y={y}
         fill="#888"
         fontSize="10"
-        fontWeight="bold"
+        fontWeight="400"
+        fontFamily='Inter'
         textAnchor="middle"
         transform={`rotate(${rotate}, ${x}, ${y})`}
       >
@@ -97,15 +99,15 @@ const CircadianRhythm = () => {
         borderRadius: 20,
         overflow: 'hidden',
         backgroundColor: '#000',
-        marginTop: 20
+        marginTop: 5,
       }}
     >
       <ImageBackground
         source={require('../assets/images/purple-blur.png')}
         style={{
           width: '100%',
-          paddingVertical: 30,
-          paddingHorizontal: 0,
+          paddingVertical: 10,
+          paddingHorizontal: 10,
         }}
         imageStyle={{
           resizeMode: 'cover',
@@ -117,21 +119,31 @@ const CircadianRhythm = () => {
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#222',
-            borderRadius: 16,
-            paddingVertical: 4,
-            paddingHorizontal: 10,
-            marginLeft: 20,
-            alignSelf: 'flex-start',
+            justifyContent: "space-between",
+            
           }}>
-            <Text style={{
-              color: '#ccc',
-              fontSize: 12,
-              fontWeight: '600',
-              marginRight: 6,
-            }}>
-              CIRCADIAN RHYTHM
-            </Text>
+            <View 
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderRadius: 20,
+              }}
+            >
+              <Text 
+                style={{
+                color: '#FFFFFF',
+                fontSize: 10,
+                letterSpacing: 1,
+                fontWeight: '500',
+                fontFamily: "Inter",
+                opacity: 0.9
+                }}
+              >
+                CIRCADIAN RHYTHM
+              </Text>
+            </View>
+            <ChevronRight width={20} height={20} stroke="#54504D" strokeWidth={3} />
           </View>
 
           {/* Circadian Timer */}
@@ -189,6 +201,7 @@ const CircadianRhythm = () => {
                 ends in
               </Text>
               <Text style={{
+                fontFamily: "Inter",
                 fontSize: 42,
                 color: '#654DDD',
               }}>
@@ -201,6 +214,7 @@ const CircadianRhythm = () => {
           <View style={{ marginTop: 25, paddingHorizontal: 20, marginBottom: 30 }}>
             <Text style={{
               fontSize: 16,
+              fontFamily: "Inter",
               color: '#fff',
               textAlign: 'center',
               marginBottom: 6,
@@ -209,6 +223,7 @@ const CircadianRhythm = () => {
             </Text>
             <Text style={{
               fontSize: 13,
+              fontFamily: "Inter",
               color: '#888',
               textAlign: 'center',
               lineHeight: 18,

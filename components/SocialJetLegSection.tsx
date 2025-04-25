@@ -1,97 +1,84 @@
-import React from 'react'
+import React from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { ChevronRight } from 'react-native-feather';
 
-import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions } from "react-native";
-import { Link } from "expo-router";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-
-export default function SocialJetLegSection() {
+const SleepDebtComponent = () => {
   return (
-    <View style={{
-        backgroundColor: 'black',
-        borderColor: '#444',
+    <TouchableOpacity 
+      style={{
+        height: 138,
+        borderRadius: 20,
+        backgroundColor: '#000',
         borderWidth: 1,
-        borderRadius: 16,
+        borderColor: "#141414",
         overflow: 'hidden',
-        position: 'relative',
-        marginTop: 20
+        marginTop: 5
+      }}
+    >
+      <Image
+        source={require('../assets/images/whiteBlurs.png')}
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+        }}
+      />
+      
+      <View style={{
+        flex: 1,
+        justifyContent: 'space-between',
+        padding: 10,
       }}>
-        <Image 
-          source={require('../assets/images/blue-blur.png')}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            width: '100%',
-            height: '100%',
-            resizeMode: 'cover',
-          }}
-        />
-
-        <View style={{ padding: 20 }}>
-          <Text style={{
-            color: '#aaa',
-            fontSize: 14,
-            fontWeight: '500',
-            marginBottom: 16
-          }}>
-            SOCIAL JETLAG · LAST WEEK
-          </Text>
-
-          <Text style={{
-            color: 'white',
-            fontSize: 56,
-            textAlign: 'center'
-          }}>
-            40m
-          </Text>
-
-          <View style={{
-            backgroundColor: '#222',
-            paddingVertical: 6,
-            paddingHorizontal: 12,
-            borderRadius: 8,
-            alignSelf: 'center',
-            marginTop: 8,
-            marginBottom: 16
-          }}>
-            <Text style={{
-              color: 'white',
-              fontSize: 14,
-              fontWeight: '500'
-            }}>
-              Late Weekend Sleeper
-            </Text>
-          </View>
-
-          <Text style={{
-            color: '#ccc',
-            fontSize: 14,
-            textAlign: 'center',
-            marginBottom: 20
-          }}>
-            You stay up late during weekdays but sleep longer to make up for it.
-            It’s like starting your week in Mumbai, but your body sometimes drifts into Dubai time.
-          </Text>
-
-          <View style={{
-            backgroundColor: '#111',
-            paddingVertical: 12,
-            paddingHorizontal: 8,
-            borderRadius: 12,
-            marginTop: 16
-          }}>
-            <Text style={{
-              color: '#888',
-              fontSize: 13,
-              textAlign: 'center'
-            }}>
-              This week’s jetlag calibrating in 7 days
-            </Text>
-          </View>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <View 
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderRadius: 20,
+              }}
+            >
+              <Text 
+                style={{
+                color: '#FFFFFF',
+                fontSize: 10,
+                letterSpacing: 1,
+                fontWeight: '500',
+                fontFamily: "Inter",
+                opacity: 0.9
+                }}
+              >
+                SLEEP DEBT
+              </Text>
+            </View>
+          <ChevronRight width={24} height={24} color="#8E8E93" />
         </View>
+        
+        <Text style={{
+          color: '#30FA48',
+          fontSize: 30,
+          fontWeight: '500',
+          textAlign: 'center',
+          fontFamily: "Inter"
+        }}>
+          -6h 6m
+        </Text>
+        
+        <Text style={{
+          color: '#8E8E93',
+          fontSize: 12,
+          textAlign: 'center',
+          fontFamily: "Inter"
+        }}>
+          Sleep between <Text style={{ color: 'white' }}>1:59 AM - 2:29 AM</Text> tonight, to get a minimum recommended sleep of <Text style={{ color: 'white' }}>6h 45m</Text> of sleep.
+        </Text>
       </View>
-  )
-}
+    </TouchableOpacity>
+  );
+};
+
+export default SleepDebtComponent;

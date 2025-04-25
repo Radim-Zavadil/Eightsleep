@@ -1,8 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-const CaffeineWindowsSensor = ({ status = 'Active' }) => {
+const CaffeineWindowsSensor = ({ 
+  initialStatus = 'Inactive',
+  onToggleWidget = () => {} // Default empty function if not provided
+}) => {
+  const [isAdded, setIsAdded] = useState(false);
+  const [status, setStatus] = useState(initialStatus);
+
+  const handleButtonPress = () => {
+    // Toggle the added state
+    const newAddedState = !isAdded;
+    setIsAdded(newAddedState);
+    
+    // Update status based on the added state
+    setStatus(newAddedState ? 'Active' : 'Inactive');
+    
+    // Call the parent function to toggle widget visibility
+    onToggleWidget(newAddedState);
+  };
+
   const isActive = status === 'Active';
 
   return (
@@ -30,28 +48,27 @@ const CaffeineWindowsSensor = ({ status = 'Active' }) => {
         }}
       >
         <View
-            style={{
-                backgroundColor: "#1F1E23",
-                width: 50,
-                height: 50,
-                borderRadius: 12,
-                borderWidth: "1px",
-                borderColor: "#6B728A",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-            }}
+          style={{
+            backgroundColor: "#1F1E23",
+            width: 50,
+            height: 50,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: "#6B728A",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+          }}
         >
-            <Svg width={42} height={42} viewBox="0 0 42 42">
-            <path d="M26.5855 27.1805C29.2181 25.8124 31.3906 23.7007 32.833 21.108C36.228 15.2455 35.563 8.54304 31.3805 6.12804C27.198 3.71304 21.003 6.49554 17.678 12.358C17.3756 12.8918 17.101 13.4409 16.8555 14.003" fill="#95949A"/>
-            <path d="M26.5855 27.1805C29.2181 25.8124 31.3906 23.7007 32.833 21.108C36.228 15.2455 35.563 8.54304 31.3805 6.12804C27.198 3.71304 21.003 6.49554 17.678 12.358C17.3756 12.8918 17.101 13.4409 16.8555 14.003" stroke="#302F35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M22.8707 35.8817C27.0558 33.4654 27.7062 26.757 24.3234 20.8979C20.9407 15.0388 14.8058 12.2478 10.6207 14.6641C6.43563 17.0803 5.78522 23.7888 9.16797 29.6479C12.5507 35.507 18.6856 38.2979 22.8707 35.8817Z" fill="#95949A" stroke="#302F35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M24.3633 20.44C25.7808 16.2925 23.5758 13.5975 31.3633 6.125" stroke="#302F35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M22.7525 35.7769C12.3575 26.2569 21.8425 25.3994 10.625 14.6719" stroke="#302F35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </Svg>
+          <Svg width={42} height={42} viewBox="0 0 42 42">
+            <Path d="M26.5855 27.1805C29.2181 25.8124 31.3906 23.7007 32.833 21.108C36.228 15.2455 35.563 8.54304 31.3805 6.12804C27.198 3.71304 21.003 6.49554 17.678 12.358C17.3756 12.8918 17.101 13.4409 16.8555 14.003" fill="#95949A"/>
+            <Path d="M26.5855 27.1805C29.2181 25.8124 31.3906 23.7007 32.833 21.108C36.228 15.2455 35.563 8.54304 31.3805 6.12804C27.198 3.71304 21.003 6.49554 17.678 12.358C17.3756 12.8918 17.101 13.4409 16.8555 14.003" stroke="#302F35" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <Path d="M22.8707 35.8817C27.0558 33.4654 27.7062 26.757 24.3234 20.8979C20.9407 15.0388 14.8058 12.2478 10.6207 14.6641C6.43563 17.0803 5.78522 23.7888 9.16797 29.6479C12.5507 35.507 18.6856 38.2979 22.8707 35.8817Z" fill="#95949A" stroke="#302F35" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <Path d="M24.3633 20.44C25.7808 16.2925 23.5758 13.5975 31.3633 6.125" stroke="#302F35" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <Path d="M22.7525 35.7769C12.3575 26.2569 21.8425 25.3994 10.625 14.6719" stroke="#302F35" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </Svg>
         </View>
         
-
         <View
           style={{
             backgroundColor: isActive ? '#493A5E' : '#603B27',
@@ -63,8 +80,9 @@ const CaffeineWindowsSensor = ({ status = 'Active' }) => {
           <Text
             style={{
               color: '#fff',
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: '500',
+              fontFamily: "Inter"
             }}
           >
             {status}
@@ -79,7 +97,8 @@ const CaffeineWindowsSensor = ({ status = 'Active' }) => {
           color: '#D0C2ED',
           fontSize: 12,
           letterSpacing: 4,
-          opacity: 0.6
+          opacity: 0.6,
+          fontFamily: "Inter"
         }}
       >
         PRODUCTIVITY
@@ -92,6 +111,7 @@ const CaffeineWindowsSensor = ({ status = 'Active' }) => {
           fontSize: 22,
           fontWeight: '400',
           marginTop: 4,
+          fontFamily: "Inter"
         }}
       >
         Caffeine windows
@@ -104,14 +124,16 @@ const CaffeineWindowsSensor = ({ status = 'Active' }) => {
           fontSize: 14,
           marginTop: 6,
           flex: 1,
-          opacity: 0.6
+          opacity: 0.6,
+          fontFamily: "Inter"
         }}
       >
         Maximize your Vitamin D with smart and personalized suggestions for sun exposure.
       </Text>
 
-      {/* Button */}
+      {/* Button with state handling */}
       <TouchableOpacity
+        onPress={handleButtonPress}
         style={{
           position: 'absolute',
           right: 16,
@@ -120,15 +142,17 @@ const CaffeineWindowsSensor = ({ status = 'Active' }) => {
           paddingHorizontal: 20,
           paddingVertical: 8,
           borderRadius: 20,
+          opacity: isAdded ? 0.3 : 1,
         }}
       >
         <Text
           style={{
             color: '#000',
             fontWeight: 'bold',
+            fontFamily: "Inter"
           }}
         >
-          Get
+          {isAdded ? 'Added' : 'Get'}
         </Text>
       </TouchableOpacity>
     </View>
