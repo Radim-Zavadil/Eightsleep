@@ -1,0 +1,75 @@
+How to make this chart in react native app ? I circled it with blue line. It should be basicaly half circle graph.
+In the future it should be working like chart will be representing sleeping score. So 100% would be Filler with White as you can see in the picture. 0% would be totally empty chart.
+
+Can you fit the code I'll give you into this app ? And can you also tweak it so there won't be errors ?
+
+Code:
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
+
+const HalfCircleProgress = ({ progress = 84 }) => {
+  const radius = 120;
+  const strokeWidth = 20;
+  const center = radius + strokeWidth;
+  const circumference = Math.PI * radius;
+  const fillPercent = Math.max(0, Math.min(progress, 100));
+  const strokeDashoffset = circumference * (1 - fillPercent / 100);
+
+  return (
+    <View style={styles.container}>
+      <Svg width={center * 2} height={center + strokeWidth}>
+        {/* Background Arc */}
+        <Circle
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke="#1c1c1c" // dark background
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={0}
+        />
+
+        {/* Foreground Arc */}
+        <Circle
+          cx={center}
+          cy={center}
+          r={radius}
+          stroke="#FFFFFF" // white foreground
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </Svg>
+
+      {/* Sleep Score */}
+      <Text style={styles.progressText}>{progress}</Text>
+      <Text style={styles.subText}>Highest in last 7 days</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  progressText: {
+    position: 'absolute',
+    top: 90,
+    fontSize: 56,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  subText: {
+    position: 'absolute',
+    top: 150,
+    fontSize: 14,
+    color: '#ccc',
+  },
+});
+
+export default HalfCircleProgress;
