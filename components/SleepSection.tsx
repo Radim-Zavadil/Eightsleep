@@ -6,8 +6,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
 import Svg, { Path, Text as SvgText, Circle } from 'react-native-svg';
-import ArcGauge from './SleepArc';
+import RectangleGauge from './SleepArc';
 import ActivityGauge from './SleepArc';
+
+import { ChevronRight } from 'react-native-feather';
 
 export default function SleepSection() {
   return (
@@ -20,7 +22,8 @@ export default function SleepSection() {
           overflow: 'hidden',
           alignItems: 'center',
           justifyContent: 'center',
-          marginTop: 5
+          marginTop: 5,
+          paddingVertical: 5
         }}>
           {/* Two PNG background images */}
           <Image
@@ -43,7 +46,41 @@ export default function SleepSection() {
             }}
           />
 
-            <ArcGauge value={100} />
+          {/* Sleep Score and Arrow Container */}
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            paddingHorizontal: 10,
+            marginTop: 5,
+            marginBottom: 20,
+          }}>
+            <View 
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                paddingVertical: 5,
+                paddingHorizontal: 10,
+                borderRadius: 20,
+              }}
+            >
+              <Text 
+                style={{
+                  color: '#FFFFFF',
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  fontWeight: '500',
+                  fontFamily: "Inter",
+                  opacity: 0.9
+                }}
+              >
+                SLEEP SCORE
+              </Text>
+            </View>
+            <ChevronRight width={24} height={24} color="#8E8E93" />
+          </View>
+
+          <RectangleGauge value={100} />
 
           {/* Trophy Label */}
           <View style={{
@@ -67,7 +104,7 @@ export default function SleepSection() {
 
           {/* Sleep Duration Rectangle */}
           <View style={{
-            width: "450px",
+            width: 450,
             marginTop: 20,
             paddingVertical: 17,
             paddingHorizontal: 20,
