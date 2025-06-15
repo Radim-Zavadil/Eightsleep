@@ -1,69 +1,85 @@
+import { StyleSheet, View, TouchableOpacity, ScrollView, Text, Image } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Feather, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 
-import { StyleSheet, View, Image, TouchableOpacity } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const menuItems = [
+  {
+    label: 'Account',
+    icon: <Feather name="user" size={22} color="#8F8F91" />, // You can swap icons as needed
+    route: '../account-details' as const,
+  },
+  {
+    label: 'Achievements',
+    icon: <FontAwesome5 name="trophy" size={20} color="#1681F6" />, 
+    route: '../account-achievements' as const,
+  },
+  {
+    label: 'Notifications',
+    icon: <Feather name="bell" size={22} color="#1681F6" />, 
+    route: '../account-notifications' as const,
+  },
+  {
+    label: 'Sleep length goal',
+    icon: <MaterialIcons name="hotel" size={22} color="#31D156" />, 
+    route: '../account-goal' as const,
+  },
+  {
+    label: 'Payments',
+    icon: <Feather name="credit-card" size={22} color="#8F8F91" />, 
+    route: '../account-payments' as const,
+  },
+  {
+    label: 'Inquiry',
+    icon: <Feather name="help-circle" size={22} color="#8F8F91" />, 
+    route: '../account-inquiry' as const,
+  },
+];
 
 export default function AccountScreen() {
+  const router = useRouter();
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>ACCOUNT</ThemedText>
+    <View style={styles.container}>
+      <View style={styles.headerBlock}>
+        <Text style={styles.headerText}>Setting</Text>
       </View>
-
-      <View style={styles.content}>
-        <TouchableOpacity style={styles.profileCard}>
-          <View style={styles.profileInfo}>
-            <View style={styles.avatar} />
-            <View>
-              <ThemedText style={styles.name}>George Heaton</ThemedText>
-              <ThemedText style={styles.email}>georgeheaton@gmail.com</ThemedText>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Detached Account Button */}
+        <TouchableOpacity
+          style={styles.accountButton}
+          onPress={() => router.push(menuItems[0].route)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.iconSquare}>{menuItems[0].icon}</View>
+          <Text style={styles.menuText}>{menuItems[0].label}</Text>
+          <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
+        </TouchableOpacity>
+        {/* Stack of other buttons */}
+        <View style={styles.stackContainer}>
+          {menuItems.slice(1).map((item, idx) => (
+            <View key={item.label}>
+              <TouchableOpacity
+                style={[
+                  styles.menuBlock,
+                  idx === 0 && styles.firstMenuBlock,
+                  idx === menuItems.length - 2 && styles.lastMenuBlock,
+                ]}
+                onPress={() => item.route && router.push(item.route)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.iconSquare}>{item.icon}</View>
+                <Text style={styles.menuText}>{item.label}</Text>
+                <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
+              </TouchableOpacity>
+              {idx < menuItems.length - 2 && <View style={styles.divider} />}
             </View>
-          </View>
-          <Image 
-            source={require('../../assets/images/ArrowRightGrey.png')}
-            style={styles.arrowIcon}
-          />
+          ))}
+        </View>
+        <View style={{flex:1}} />
+        <TouchableOpacity style={styles.signOutButton}>
+          <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={styles.menuItemContent}>
-            <Image source={require('../../assets/images/Trophy.svg')} style={styles.menuIcon} />
-            <ThemedText style={styles.menuText}>Achievements</ThemedText>
-          </View>
-          <Image source={require('../../assets/images/ArrowRightGrey.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={styles.menuItemContent}>
-            <Image source={require('../../assets/images/Attention.svg')} style={styles.menuIcon} />
-            <ThemedText style={styles.menuText}>Notifications</ThemedText>
-          </View>
-          <Image source={require('../../assets/images/ArrowRightGrey.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={styles.menuItemContent}>
-            <Image source={require('../../assets/images/Account.svg')} style={styles.menuIcon} />
-            <ThemedText style={styles.menuText}>Account Settings</ThemedText>
-          </View>
-          <Image source={require('../../assets/images/ArrowRightGrey.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.menuItem}>
-          <View style={styles.menuItemContent}>
-            <Image source={require('../../assets/images/Calendar.svg')} style={styles.menuIcon} />
-            <ThemedText style={styles.menuText}>Payments</ThemedText>
-          </View>
-          <Image source={require('../../assets/images/ArrowRightGrey.png')} style={styles.arrowIcon} />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={[styles.menuItem, styles.signOut]}>
-          <View style={styles.menuItemContent}>
-            <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
-          </View>
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -72,90 +88,97 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerBlock: {
     paddingTop: 60,
-    paddingHorizontal: 20,
-    gap: 8,
+    paddingBottom: 24,
+    alignItems: 'center',
+    marginBottom: 8,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+  headerText: {
+    fontSize: 18,
+    fontWeight: '400',
+    fontFamily: 'Inter',
+    color: '#fff',
+    letterSpacing: 1.2,
   },
   content: {
     padding: 20,
-    gap: 16,
+    flexGrow: 1,
   },
-  profileCard: {
+  accountButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#141414',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(248, 248, 248, 0.16)',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginBottom: 24,
   },
-  profileInfo: {
+  stackContainer: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 32,
+    borderWidth: 1.5,
+    borderColor: 'rgba(248, 248, 248, 0.16)',
+  },
+  menuBlock: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: 'transparent',
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#FFFFFF',
+  firstMenuBlock: {
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
   },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  lastMenuBlock: {
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 18,
   },
-  email: {
-    fontSize: 14,
-    color: '#808080',
-  },
-  menuItem: {
-    flexDirection: 'row',
+  iconSquare: {
+    width: 40,
+    height: 40,
+    borderRadius: 7,
+    backgroundColor: 'rgba(0, 0, 0, 0.46)',
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.14)",
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#141414',
-  },
-  menuItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  menuIcon: {
-    width: 24,
-    height: 24,
+    justifyContent: 'center',
+    marginRight: 16,
   },
   menuText: {
+    color: '#fff',
     fontSize: 16,
-    color: '#FFFFFF',
+    fontWeight: '500',
+    flex: 1,
+    fontFamily: 'Inter',
   },
   arrowIcon: {
-    width: 24,
-    height: 24,
+    marginLeft: 8,
   },
-  signOut: {
-    justifyContent: 'center',
-    marginTop: 8,
+  divider: {
+    height: 1,
+    backgroundColor: 'rgba(248, 248, 248, 0.1)',
+    marginLeft: 72,
+    marginRight: 0,
+  },
+  signOutButton: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    paddingVertical: 22,
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 24,
   },
   signOutText: {
+    color: '#101014',
     fontSize: 16,
-    color: '#FF3B30',
-    textAlign: 'center',
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    fontFamily: 'Inter',
   },
 });
