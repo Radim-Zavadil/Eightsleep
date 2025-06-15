@@ -2,14 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import Svg, { Rect, Text } from 'react-native-svg';
 
+import { Shadow } from 'react-native-shadow-2';
+
 const RectangleGauge = ({
   value = 0,
   maxValue = 100,
   width = 170,
   height = 100,
-  barHeight = 30,
+  barHeight = 32,
   barRadius = 4,
-  backgroundColor = '#222',
+  backgroundColor = 'rgba(255,255,255,0.3)',
   fillColor = '#00FF64',
   animationDuration = 800,
 }) => {
@@ -40,7 +42,7 @@ const RectangleGauge = ({
           textAnchor="middle"
           alignmentBaseline="middle"
           fontSize={50}
-          fontWeight="500"
+          fontWeight="400"
           fontFamily="Inter"
           fill="#00FF64"
         >
@@ -54,17 +56,45 @@ const RectangleGauge = ({
           height={barHeight}
           rx={barRadius}
           fill={backgroundColor}
-          opacity={0.18}
+          opacity={0.38}
+          stroke="rgba(0,0,0,0.5)"
+          strokeWidth={3}
         />
-        {/* Filled bar */}
         <Rect
-          x={16}
-          y={height / 2 + 6}
-          width={fillWidth}
-          height={barHeight}
-          rx={barRadius}
-          fill={fillColor}
+          x={153}
+          y={height / 2 + 16.5}
+          width={10}
+          height={12}
+          rx={barRadius - 1}
+          fill={backgroundColor}
+          opacity={0.2}
         />
+        
+
+        {/* Filled bar */}
+
+          <Rect
+            x={16}
+            y={height / 2 + 6}
+            width={fillWidth}
+            height={barHeight}
+            rx={barRadius}
+            fill={fillColor}
+            stroke="rgba(0,0,0,0.3)"
+            strokeWidth={3}
+          />
+
+          <Rect
+            x={17}
+            y={height / 2 + 8}
+            width={fillWidth - 3}
+            height={barHeight - 3}
+            rx={barRadius}
+            fill="rgba(255,255,255,0.0)"
+            stroke="rgba(255, 255, 255, 0.5)"
+            strokeWidth={3}
+          />
+
       </Svg>
     </View>
   );
