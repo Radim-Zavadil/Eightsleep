@@ -1,6 +1,8 @@
-import { StyleSheet, View, TouchableOpacity, ScrollView, Text, Image } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView, Text, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
+import RequireAuth from '../../components/RequireAuth';
 
 const menuItems = [
   {
@@ -37,49 +39,77 @@ const menuItems = [
 
 export default function AccountScreen() {
   const router = useRouter();
+  const { signOut } = useAuth();
+
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signOut();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to sign out');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.headerBlock}>
-        <Text style={styles.headerText}>Setting</Text>
-      </View>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Detached Account Button */}
-        <TouchableOpacity
-          style={styles.accountButton}
-          onPress={() => router.push(menuItems[0].route)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.iconSquare}>{menuItems[0].icon}</View>
-          <Text style={styles.menuText}>{menuItems[0].label}</Text>
-          <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
-        </TouchableOpacity>
-        {/* Stack of other buttons */}
-        <View style={styles.stackContainer}>
-          {menuItems.slice(1).map((item, idx) => (
-            <View key={item.label}>
-              <TouchableOpacity
-                style={[
-                  styles.menuBlock,
-                  idx === 0 && styles.firstMenuBlock,
-                  idx === menuItems.length - 2 && styles.lastMenuBlock,
-                ]}
-                onPress={() => item.route && router.push(item.route)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.iconSquare}>{item.icon}</View>
-                <Text style={styles.menuText}>{item.label}</Text>
-                <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
-              </TouchableOpacity>
-              {idx < menuItems.length - 2 && <View style={styles.divider} />}
-            </View>
-          ))}
+    <RequireAuth>
+      <View style={styles.container}>
+        <View style={styles.headerBlock}>
+          <Text style={styles.headerText}>Setting</Text>
         </View>
-        <View style={{flex:1}} />
-        <TouchableOpacity style={styles.signOutButton}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Detached Account Button */}
+          <TouchableOpacity
+            style={styles.accountButton}
+            onPress={() => router.push(menuItems[0].route)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconSquare}>{menuItems[0].icon}</View>
+            <Text style={styles.menuText}>{menuItems[0].label}</Text>
+            <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
+          </TouchableOpacity>
+          {/* Stack of other buttons */}
+          <View style={styles.stackContainer}>
+            {menuItems.slice(1).map((item, idx) => (
+              <View key={item.label}>
+                <TouchableOpacity
+                  style={[
+                    styles.menuBlock,
+                    idx === 0 && styles.firstMenuBlock,
+                    idx === menuItems.length - 2 && styles.lastMenuBlock,
+                  ]}
+                  onPress={() => item.route && router.push(item.route)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.iconSquare}>{item.icon}</View>
+                  <Text style={styles.menuText}>{item.label}</Text>
+                  <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
+                </TouchableOpacity>
+                {idx < menuItems.length - 2 && <View style={styles.divider} />}
+              </View>
+            ))}
+          </View>
+          <View style={{flex:1}} />
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    </RequireAuth>
   );
 }
 

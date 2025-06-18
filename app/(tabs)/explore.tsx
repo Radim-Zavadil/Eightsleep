@@ -1,6 +1,7 @@
 import { StyleSheet, View, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import RequireAuth from '../../components/RequireAuth';
 
 //sensors
 import ScreentimeSensor from '@/components/sensors/ScreentimeSensor';
@@ -13,23 +14,25 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function ExploreScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.title}>SENSOR STORE</ThemedText>
-        <Image source={require('../../assets/images/infoIcon.svg')} style={styles.infoIcon} />
-      </View>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.cardsContainer}>
-          
-          <ScreentimeSensor />
-          <VitaminDSensor />
-          <CaffeineWindowsSensor />
-          <CircadianRhythmSensor />
-          <SmartAlarmSensor />
-
+    <RequireAuth>
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText style={styles.title}>SENSOR STORE</ThemedText>
+          <Image source={require('../../assets/images/infoIcon.svg')} style={styles.infoIcon} />
         </View>
-      </ScrollView>
-    </ThemedView>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.cardsContainer}>
+            
+            <ScreentimeSensor />
+            <VitaminDSensor />
+            <CaffeineWindowsSensor />
+            <CircadianRhythmSensor />
+            <SmartAlarmSensor />
+
+          </View>
+        </ScrollView>
+      </ThemedView>
+    </RequireAuth>
   );
 }
 

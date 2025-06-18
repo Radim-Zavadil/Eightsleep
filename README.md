@@ -1,3 +1,134 @@
+# SleepSync - Sleep Optimization App
+
+A wellness and sleep optimization mobile app designed for both iOS and Android, featuring user authentication, onboarding, and comprehensive sleep tracking features.
+
+## Features
+
+### Authentication & Onboarding
+- **User Authentication**: Email/password signup and login using Supabase
+- **5-Step Onboarding Process**:
+  1. Date of Birth input
+  2. Weight input (kg)
+  3. Height input (cm)
+  4. Sport activity selection (Yes/No/Sometimes)
+  5. Optimal sleep goal calculation with custom override option
+- **Automatic Routing**: New users go through onboarding, returning users go directly to app
+
+### Sleep Tracking & Optimization
+- Sleep duration tracking
+- Sleep quality analysis
+- Circadian rhythm monitoring
+- Smart alarm functionality
+- Recovery tracking
+- Journal entries for sleep insights
+
+### Wellness Features
+- Caffeine intake tracking
+- Screen time monitoring
+- Vitamin D exposure tracking
+- Light exposure optimization
+- Water intake tracking
+
+## Setup Instructions
+
+### 1. Environment Variables
+Create a `.env` file in the root directory with your Supabase credentials:
+
+```env
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 2. Database Setup
+Run the SQL schema in your Supabase SQL editor to create the necessary tables:
+
+```sql
+-- The schema.sql file contains all the necessary database setup
+-- This includes the profiles table and related triggers/functions
+```
+
+### 3. Install Dependencies
+```bash
+npm install
+```
+
+### 4. Run the App
+```bash
+npm start
+```
+
+## Database Schema
+
+### Profiles Table
+Stores user onboarding data and preferences:
+- `id`: UUID (references auth.users)
+- `email`: User's email address
+- `date_of_birth`: User's birth date
+- `weight`: Weight in kg
+- `height`: Height in cm
+- `sport_activity`: Sport activity level (Yes/No/Sometimes)
+- `sleep_goal_hours`: Optimal sleep duration in hours
+- `onboarding_completed`: Boolean flag for onboarding status
+- `created_at` & `updated_at`: Timestamps
+
+## Authentication Flow
+
+1. **New User**: Sign up → Onboarding → Main App
+2. **Returning User**: Login → Main App (skips onboarding)
+3. **Sign Out**: Returns to authentication screen
+
+## Onboarding Flow
+
+1. **Step 1**: Date of Birth selection
+2. **Step 2**: Weight input (kg)
+3. **Step 3**: Height input (cm)
+4. **Step 4**: Sport activity selection
+5. **Step 5**: Sleep goal calculation and customization
+
+## Sleep Goal Calculation
+
+The app calculates optimal sleep duration based on:
+- **Age**: Different recommendations for teenagers, adults, and elderly
+- **Sport Activity**: Active users may need more sleep
+- **Custom Override**: Users can set their own sleep goal
+
+## Tech Stack
+
+- **Frontend**: React Native with Expo
+- **Backend**: Supabase (PostgreSQL + Auth)
+- **Navigation**: Expo Router
+- **State Management**: React Context
+- **UI Components**: Custom components with consistent styling
+- **Date/Time**: @react-native-community/datetimepicker
+
+## Project Structure
+
+```
+├── app/                    # Main app screens
+│   ├── auth.tsx           # Authentication screen
+│   ├── onboarding.tsx     # Onboarding flow
+│   └── (tabs)/            # Main app tabs
+├── components/            # Reusable components
+│   └── Onboarding/        # Onboarding step components
+├── context/               # React Context providers
+│   └── AuthContext.tsx    # Authentication context
+├── types/                 # TypeScript type definitions
+├── supabaseClient.js      # Supabase client configuration
+└── schema.sql            # Database schema
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.
+
 # Welcome to Expo on Replit 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app), and adapted to use on Replit.

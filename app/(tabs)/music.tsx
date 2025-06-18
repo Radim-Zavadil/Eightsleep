@@ -1,13 +1,15 @@
-
 import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import RequireAuth from '../../components/RequireAuth';
 
 export default function MusicScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>Music</ThemedText>
-    </ThemedView>
+    <RequireAuth>
+      <ThemedView style={styles.container}>
+        <ThemedText style={styles.title}>Music</ThemedText>
+      </ThemedView>
+    </RequireAuth>
   );
 }
 

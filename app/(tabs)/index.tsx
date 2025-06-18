@@ -30,6 +30,7 @@ import { useCaffeineContext } from '@/components/Context/CaffeineContext';
 import { useScreenContext } from '@/components/Context/ScreenContext';
 import { useCircadianContext } from '@/components/Context/CircadianContext';
 import { useSmartContext } from '@/components/Context/AlarmContext';
+import RequireAuth from '../../components/RequireAuth';
 
 const HomePage: React.FC = () => {
   
@@ -40,69 +41,71 @@ const HomePage: React.FC = () => {
   const { showSmartWidget } = useSmartContext();
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <ThemedText style={styles.yesterdayText}>YESTERDAY</ThemedText>
-        
-        <View style={styles.centerContent}>
-          <ThemedText style={styles.todayText}>TODAY</ThemedText>
-          <svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g filter="url(#filter0_i_697_13817)">
-          <path d="M1 1L6.68966 7L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </g>
-          <defs>
-          <filter id="filter0_i_697_13817" x="0" y="0" width="13" height="8" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-          <feOffset/>
-          <feGaussianBlur stdDeviation="0.35"/>
-          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
-          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.72 0"/>
-          <feBlend mode="normal" in2="shape" result="effect1_innerShadow_697_13817"/>
-          </filter>
-          </defs>
-          </svg>
-        </View>
-        <Link href="/calendar" style={styles.circleContainer}>
-          <View style={styles.circle}>
-            <ThemedText style={styles.circleText}>3</ThemedText>
+    <RequireAuth>
+      <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText style={styles.yesterdayText}>YESTERDAY</ThemedText>
+          
+          <View style={styles.centerContent}>
+            <ThemedText style={styles.todayText}>TODAY</ThemedText>
+            <svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#filter0_i_697_13817)">
+            <path d="M1 1L6.68966 7L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <defs>
+            <filter id="filter0_i_697_13817" x="0" y="0" width="13" height="8" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+            <feOffset/>
+            <feGaussianBlur stdDeviation="0.35"/>
+            <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.72 0"/>
+            <feBlend mode="normal" in2="shape" result="effect1_innerShadow_697_13817"/>
+            </filter>
+            </defs>
+            </svg>
           </View>
-        </Link>
-      </View>
-      <Widgets />
-      <ScrollView style={styles.sectionsContainer}>
+          <Link href="/calendar" style={styles.circleContainer}>
+            <View style={styles.circle}>
+              <ThemedText style={styles.circleText}>3</ThemedText>
+            </View>
+          </Link>
+        </View>
+        <Widgets />
+        <ScrollView style={styles.sectionsContainer}>
 
-        {/**SLEEP SECTION */}
-        <SleepSection />
+          {/**SLEEP SECTION */}
+          <SleepSection />
 
-        {/*SLEEP DEBT */}
-        <SleepDebtComponent />
+          {/*SLEEP DEBT */}
+          <SleepDebtComponent />
 
 
-        {/**SMART ALARM */}
-        {showSmartWidget && <SmartAlarmCard />}
+          {/**SMART ALARM */}
+          {showSmartWidget && <SmartAlarmCard />}
+          
+          
+          {/**RECOVERY SECTION */}
+          <RecoverySection />
+
+          
+          <NsdrComponent />
         
-        
-        {/**RECOVERY SECTION */}
-        <RecoverySection />
+          {/**JOURNAL */}
+          <JournalSection />
+          
+          {/*CIRCADIAN RHYTHM */}
+          {showCircadianWidget && <CircadianTimer />}
+          
 
-        
-        <NsdrComponent />
-      
-        {/**JOURNAL */}
-        <JournalSection />
-        
-        {/*CIRCADIAN RHYTHM */}
-        {showCircadianWidget && <CircadianTimer />}
-        
+          {/*CAFFEINE WINDOWS */}
+          {showCaffeineWidget && <CaffeineWindowsSection />}
+          
 
-        {/*CAFFEINE WINDOWS */}
-        {showCaffeineWidget && <CaffeineWindowsSection />}
-        
-
-      </ScrollView>
-    </ThemedView>
+        </ScrollView>
+      </ThemedView>
+    </RequireAuth>
   );
 }
 
