@@ -16,13 +16,17 @@ export default function LoginPasswordScreen() {
       setError('Please enter your password');
       return;
     }
+    if (!email || typeof email !== 'string') {
+      setError('Invalid email parameter');
+      return;
+    }
     try {
-      const { error } = await supabase.auth.signIn({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setError(error.message);
         return;
       }
-      router.replace('/(tabs)');
+      // Navigation will be handled by the auth state change listener
     } catch (err) {
       setError('An error occurred. Please try again.');
     }

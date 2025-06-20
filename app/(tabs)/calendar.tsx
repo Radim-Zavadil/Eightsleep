@@ -4,7 +4,6 @@ import { ThemedView } from '@/components/ThemedView';
 import DayProgressRings from '@/components/DayProgressRings';
 import React, { useRef } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import RequireAuth from '../../components/RequireAuth';
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -99,56 +98,56 @@ export default function CalendarScreen() {
   );
 
   return (
-    <RequireAuth>
-      <ThemedView style={styles.container}>
-        <View style={styles.header}>
-          <ThemedText style={styles.title}>CALENDAR</ThemedText>
-        </View>
-        {/* Static weekday header */}
-        <View style={styles.staticWeekdaysRow}>
-          {WEEKDAYS.map((wd, i) => (
-            <ThemedText key={i} style={styles.weekday}>{wd}</ThemedText>
-          ))}
-        </View>
-        <FlatList
-          ref={monthListRef}
-          data={months}
-          keyExtractor={item => item.key}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item: month }) => (
-            <View style={styles.monthSection}>
-              <ThemedText style={styles.monthLabel}>{month.label}</ThemedText>
-              {month.matrix.map((week: (Date|null)[], wi: number) => (
-                <View key={wi} style={styles.weekRow}>
-                  {week.map((date: Date|null, di: number) => {
-                    if (!date) {
-                      return <View key={di} style={styles.dayCell} />;
-                    }
-                    const key = formatDate(date);
-                    const isThisWeek = weekDates.includes(key);
-                    const isToday = key === formatDate(today);
-                    const isFuture = date > today;
-                    return (
-                      <View key={di} style={styles.dayCell}>
-                        <DayProgressRings
-                          sleepLength={isThisWeek ? Math.random() : 0}
-                          bedroomScore={isThisWeek ? Math.random() : 0}
-                          overallScore={isThisWeek ? Math.random() : 0}
-                          isFuture={isFuture}
-                          isToday={isToday}
-                          size={40}
-                        />
-                        <ThemedText style={styles.dayLabel}>{date.getDate()}</ThemedText>
-                      </View>
-                    );
-                  })}
-                </View>
-              ))}
-            </View>
-          )}
-        />
-      </ThemedView>
-    </RequireAuth>
+    <ThemedView style={styles.container}>
+      <ThemedText style={styles.title}>Calendar</ThemedText>
+      <ThemedText style={styles.subtitle}>Track your sleep patterns over time</ThemedText>
+      <View style={styles.header}>
+        <ThemedText style={styles.title}>CALENDAR</ThemedText>
+      </View>
+      {/* Static weekday header */}
+      <View style={styles.staticWeekdaysRow}>
+        {WEEKDAYS.map((wd, i) => (
+          <ThemedText key={i} style={styles.weekday}>{wd}</ThemedText>
+        ))}
+      </View>
+      <FlatList
+        ref={monthListRef}
+        data={months}
+        keyExtractor={item => item.key}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item: month }) => (
+          <View style={styles.monthSection}>
+            <ThemedText style={styles.monthLabel}>{month.label}</ThemedText>
+            {month.matrix.map((week: (Date|null)[], wi: number) => (
+              <View key={wi} style={styles.weekRow}>
+                {week.map((date: Date|null, di: number) => {
+                  if (!date) {
+                    return <View key={di} style={styles.dayCell} />;
+                  }
+                  const key = formatDate(date);
+                  const isThisWeek = weekDates.includes(key);
+                  const isToday = key === formatDate(today);
+                  const isFuture = date > today;
+                  return (
+                    <View key={di} style={styles.dayCell}>
+                      <DayProgressRings
+                        sleepLength={isThisWeek ? Math.random() : 0}
+                        bedroomScore={isThisWeek ? Math.random() : 0}
+                        overallScore={isThisWeek ? Math.random() : 0}
+                        isFuture={isFuture}
+                        isToday={isToday}
+                        size={40}
+                      />
+                      <ThemedText style={styles.dayLabel}>{date.getDate()}</ThemedText>
+                    </View>
+                  );
+                })}
+              </View>
+            ))}
+          </View>
+        )}
+      />
+    </ThemedView>
   );
 }
 
@@ -217,5 +216,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     marginTop: 1,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    marginBottom: 20,
   },
 });

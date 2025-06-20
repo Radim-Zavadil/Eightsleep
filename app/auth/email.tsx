@@ -30,7 +30,7 @@ export default function LoginEmailScreen() {
 
       if (existingUser) {
         router.push({
-          pathname: '/login/password',
+          pathname: '/auth/password',
           params: { email }
         });
       } else {

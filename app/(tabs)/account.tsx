@@ -1,115 +1,99 @@
+import React from 'react';
 import { StyleSheet, View, TouchableOpacity, ScrollView, Text, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-import RequireAuth from '../../components/RequireAuth';
+import { ThemedView } from '../../components/ThemedView';
+import { ThemedText } from '../../components/ThemedText';
 
 const menuItems = [
   {
     label: 'Account',
-    icon: <Feather name="user" size={22} color="#8F8F91" />, // You can swap icons as needed
-    route: '../account-details' as const,
-  },
-  {
-    label: 'Achievements',
-    icon: <FontAwesome5 name="trophy" size={20} color="#1681F6" />, 
-    route: '../account-achievements' as const,
+    icon: <MaterialIcons name="person" size={20} color="#fff" />,
+    route: '/account-details'
   },
   {
     label: 'Notifications',
-    icon: <Feather name="bell" size={22} color="#1681F6" />, 
-    route: '../account-notifications' as const,
-  },
-  {
-    label: 'Sleep length goal',
-    icon: <MaterialIcons name="hotel" size={22} color="#31D156" />, 
-    route: '../account-goal' as const,
+    icon: <MaterialIcons name="notifications" size={20} color="#fff" />,
+    route: '/account-notifications'
   },
   {
     label: 'Payments',
-    icon: <Feather name="credit-card" size={22} color="#8F8F91" />, 
-    route: '../account-payments' as const,
+    icon: <FontAwesome5 name="credit-card" size={18} color="#fff" />,
+    route: '/account-payments'
   },
   {
-    label: 'Inquiry',
-    icon: <Feather name="help-circle" size={22} color="#8F8F91" />, 
-    route: '../account-inquiry' as const,
+    label: 'Achievements',
+    icon: <MaterialIcons name="emoji-events" size={20} color="#fff" />,
+    route: '/account-achievements'
   },
+  {
+    label: 'Goal Settings',
+    icon: <MaterialIcons name="flag" size={20} color="#fff" />,
+    route: '/account-goal'
+  },
+  {
+    label: 'Send Inquiry',
+    icon: <MaterialIcons name="help" size={20} color="#fff" />,
+    route: '/account-inquiry'
+  }
 ];
 
 export default function AccountScreen() {
-  const router = useRouter();
   const { signOut } = useAuth();
+  const router = useRouter();
 
-  const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-            } catch (error) {
-              Alert.alert('Error', 'Failed to sign out');
-            }
-          },
-        },
-      ]
-    );
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return (
-    <RequireAuth>
-      <View style={styles.container}>
-        <View style={styles.headerBlock}>
-          <Text style={styles.headerText}>Setting</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Detached Account Button */}
-          <TouchableOpacity
-            style={styles.accountButton}
-            onPress={() => router.push(menuItems[0].route)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconSquare}>{menuItems[0].icon}</View>
-            <Text style={styles.menuText}>{menuItems[0].label}</Text>
-            <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
-          </TouchableOpacity>
-          {/* Stack of other buttons */}
-          <View style={styles.stackContainer}>
-            {menuItems.slice(1).map((item, idx) => (
-              <View key={item.label}>
-                <TouchableOpacity
-                  style={[
-                    styles.menuBlock,
-                    idx === 0 && styles.firstMenuBlock,
-                    idx === menuItems.length - 2 && styles.lastMenuBlock,
-                  ]}
-                  onPress={() => item.route && router.push(item.route)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.iconSquare}>{item.icon}</View>
-                  <Text style={styles.menuText}>{item.label}</Text>
-                  <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
-                </TouchableOpacity>
-                {idx < menuItems.length - 2 && <View style={styles.divider} />}
-              </View>
-            ))}
-          </View>
-          <View style={{flex:1}} />
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-            <Text style={styles.signOutText}>Sign Out</Text>
-          </TouchableOpacity>
-        </ScrollView>
+    <View style={styles.container}>
+      <View style={styles.headerBlock}>
+        <Text style={styles.headerText}>Setting</Text>
       </View>
-    </RequireAuth>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Detached Account Button */}
+        <TouchableOpacity
+          style={styles.accountButton}
+          onPress={() => router.push(menuItems[0].route as any)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.iconSquare}>{menuItems[0].icon}</View>
+          <Text style={styles.menuText}>{menuItems[0].label}</Text>
+          <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
+        </TouchableOpacity>
+        {/* Stack of other buttons */}
+        <View style={styles.stackContainer}>
+          {menuItems.slice(1).map((item, idx) => (
+            <View key={item.label}>
+              <TouchableOpacity
+                style={[
+                  styles.menuBlock,
+                  idx === 0 && styles.firstMenuBlock,
+                  idx === menuItems.length - 2 && styles.lastMenuBlock,
+                ]}
+                onPress={() => item.route && router.push(item.route as any)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.iconSquare}>{item.icon}</View>
+                <Text style={styles.menuText}>{item.label}</Text>
+                <Feather name="chevron-right" size={22} color="#888" style={styles.arrowIcon} />
+              </TouchableOpacity>
+              {idx < menuItems.length - 2 && <View style={styles.divider} />}
+            </View>
+          ))}
+        </View>
+        <View style={{flex:1}} />
+        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -127,24 +111,25 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: '400',
-    fontFamily: 'Inter',
-    color: '#fff',
-    letterSpacing: 1.2,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   content: {
-    padding: 20,
     flexGrow: 1,
   },
   accountButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(248, 248, 248, 0.16)',
     paddingVertical: 12,
     paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 12,
+    marginHorizontal: 20,
     marginBottom: 24,
+    borderWidth: 1.5,
+    borderColor: 'rgba(248, 248, 248, 0.16)',
   },
   stackContainer: {
     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -198,17 +183,17 @@ const styles = StyleSheet.create({
   },
   signOutButton: {
     backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingVertical: 22,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginHorizontal: 20,
+    marginBottom: 40,
     alignItems: 'center',
-    marginTop: 32,
-    marginBottom: 24,
   },
   signOutText: {
-    color: '#101014',
+    color: '#000',
     fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: '600',
     fontFamily: 'Inter',
   },
 });

@@ -7,7 +7,7 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
 
   if (loading) return null;
   if (!user) {
-    return <Redirect href="/auth" />;
+    return <Redirect href="/welcome" />;
   }
   return <>{children}</>;
 } 
