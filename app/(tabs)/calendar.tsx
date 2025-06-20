@@ -99,6 +99,8 @@ export default function CalendarScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <ThemedText style={styles.title}>Calendar</ThemedText>
+      <ThemedText style={styles.subtitle}>Track your sleep patterns over time</ThemedText>
       <View style={styles.header}>
         <ThemedText style={styles.title}>CALENDAR</ThemedText>
       </View>
@@ -214,5 +216,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     marginTop: 1,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    marginBottom: 20,
   },
 });

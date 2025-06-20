@@ -1,12 +1,14 @@
-
-import { StyleSheet } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import RequireAuth from '../../components/RequireAuth';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 
 export default function MusicScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>Music</ThemedText>
+      <ThemedText style={styles.subtitle}>Sleep sounds and relaxation</ThemedText>
     </ThemedView>
   );
 }
@@ -14,11 +16,17 @@ export default function MusicScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 32,
     fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 16,
+    opacity: 0.8,
   },
 });
