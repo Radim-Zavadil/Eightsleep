@@ -8,7 +8,6 @@ import { CaffeineProvider } from '@/components/Context/CaffeineContext';
 import { ScreenProvider } from '@/components/Context/ScreenContext';
 import { VitaminDProvider } from '@/components/Context/VitaminDContext';
 import { CircadianProvider } from '@/components/Context/CircadianContext';
-import { SmartProvider } from '@/components/Context/AlarmContext';
 import { BlurView } from 'expo-blur';
 import { View, StyleSheet } from 'react-native';
 import { useFonts } from 'expo-font';
@@ -42,7 +41,6 @@ export default function TabLayout() {
       <ScreenProvider>
       <VitaminDProvider>
       <CircadianProvider>
-      <SmartProvider>
 
         <Tabs
           screenOptions={{
@@ -165,7 +163,6 @@ export default function TabLayout() {
           />
         </Tabs>
       
-      </SmartProvider>
       </CircadianProvider>
       </VitaminDProvider>
       </ScreenProvider>

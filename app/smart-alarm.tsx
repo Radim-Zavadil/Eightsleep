@@ -1,14 +1,50 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { ChevronLeft, Info } from 'react-native-feather';
+import { useSmartContext } from '@/components/Context/AlarmContext';
+import AlarmModal from '@/components/AlarmModal';
+import AlarmCard from '@/components/AlarmCard';
+import { Alarm } from '@/types/alarm';
 
 const SmartAlarmPage = () => {
+  const { alarms, addAlarm, toggleAlarm, updateAlarm, deleteAlarm } = useSmartContext();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingAlarm, setEditingAlarm] = useState<Alarm | undefined>();
+
+  const handleAddAlarm = () => {
+    setEditingAlarm(undefined);
+    setModalVisible(true);
+  };
+
+  const handleEditAlarm = (alarm: Alarm) => {
+    setEditingAlarm(alarm);
+    setModalVisible(true);
+  };
+
+  const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'createdAt'>) => {
+    if (editingAlarm) {
+      updateAlarm(editingAlarm.id, alarmData);
+    } else {
+      addAlarm(alarmData);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setEditingAlarm(undefined);
+  };
+
+  // Check if there are any alarms scheduled for today
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'short' });
+  const todayAlarms = alarms.filter(alarm => 
+    alarm.isEnabled && alarm.repeatDays.includes(today)
+  );
+  const hasActiveAlarms = todayAlarms.length > 0;
+
   return (
-    <ImageBackground
-      source={require('../assets/images/smartAlarm-blur.png')}
-      style={styles.backgroundImage}
-    >
+    <View style={styles.backgroundImage}>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <Link href="/">
@@ -18,44 +54,55 @@ const SmartAlarmPage = () => {
           <Info stroke="#FFFFFF" width={24} height={24} />
         </View>
 
-        <View style={styles.content}>
-          <Image source={require('../assets/images/alarm-icon.png')} style={styles.alarmIcon} />
-          <Text style={styles.noAlarmsTitle}>No active alarms for today</Text>
-          <Text style={styles.noAlarmsSubtitle}>
-            You have active scheduled alarms but today is not included in it
-          </Text>
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>+ Add new alarm</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.myAlarmsContainer}>
-          <Text style={styles.myAlarmsTitle}>My Alarms</Text>
-          <View style={styles.alarmCard}>
-            <View>
-              <Text style={styles.alarmCardTitle}>WAKE ME UP</Text>
-              <Text style={styles.alarmCardSubtitle}>When my sleep score is 80</Text>
-              <View style={styles.alarmDetails}>
-                <View>
-                  <Text style={styles.alarmDetailTitle}>WAKE TIME</Text>
-                  <Text style={styles.alarmDetailValue}>10:30 AM</Text>
-                </View>
-                <View>
-                  <Text style={styles.alarmDetailTitle}>REPEAT</Text>
-                  <Text style={styles.alarmDetailValue}>Wed</Text>
-                </View>
-              </View>
-            </View>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <TouchableOpacity style={styles.toggleButton}>
-                    <View style={styles.toggleCircle} />
-                </TouchableOpacity>
-                <ChevronLeft stroke="#54504D" width={20} height={20} style={{ transform: [{ rotate: '180deg'}]}} />
-            </View>
+        <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.content}>
+            <Image source={require('../assets/images/alarm-icon.png')} style={styles.alarmIcon} />
+            
+            {!hasActiveAlarms ? (
+              <>
+                <Text style={styles.noAlarmsTitle}>No active alarms for today</Text>
+                <Text style={styles.noAlarmsSubtitle}>
+                  You have active scheduled alarms but today is not included in it
+                </Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.noAlarmsTitle}>Alarms scheduled for today</Text>
+                <Text style={styles.noAlarmsSubtitle}>
+                  You have {todayAlarms.length} alarm{todayAlarms.length > 1 ? 's' : ''} set for today
+                </Text>
+              </>
+            )}
+            
+            <TouchableOpacity style={styles.addButton} onPress={handleAddAlarm}>
+              <Text style={styles.addButtonText}>+ Add new alarm</Text>
+            </TouchableOpacity>
           </View>
-        </View>
+
+          {alarms.length > 0 && (
+            <View style={styles.myAlarmsContainer}>
+              <Text style={styles.myAlarmsTitle}>My Alarms</Text>
+              {alarms.map((alarm) => (
+                <AlarmCard
+                  key={alarm.id}
+                  alarm={alarm}
+                  onToggle={toggleAlarm}
+                  onEdit={handleEditAlarm}
+                  onDelete={deleteAlarm}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
+
+        <AlarmModal
+          visible={modalVisible}
+          onClose={handleCloseModal}
+          onSave={handleSaveAlarm}
+          editingAlarm={editingAlarm}
+        />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 };
 
@@ -72,6 +119,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    fontFamily: "Inter",
     paddingVertical: 16,
   },
   headerTitle: {
@@ -79,11 +127,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  content: {
+  scrollContent: {
     flex: 1,
+  },
+  content: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 50,
+    paddingVertical: 50,
   },
   alarmIcon: {
     width: 64,
@@ -123,54 +173,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
   },
-  alarmCard: {
-    backgroundColor: 'rgba(20, 20, 20, 0.8)',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#272626'
-  },
-  alarmCardTitle: {
-    color: '#A49797',
-    fontSize: 12,
-  },
-  alarmCardSubtitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  alarmDetails: {
-    flexDirection: 'row',
-    gap: 32,
-  },
-  alarmDetailTitle: {
-    color: '#A49797',
-    fontSize: 12,
-  },
-  alarmDetailValue: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-  toggleButton: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#FF3B30',
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingHorizontal: 2,
-    marginRight: 10,
-  },
-  toggleCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#FFFFFF',
-  }
 });
 
 export default SmartAlarmPage; 
