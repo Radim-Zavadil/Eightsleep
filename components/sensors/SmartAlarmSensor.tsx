@@ -17,7 +17,7 @@ const SmartAlarmSensor: React.FC = () => {
     <LinearGradient
       colors={["#BF3436", "#7C0D0F", "#480405"]}
       style={{
-        width: 380,
+        width: '100%',
         height: 240,
         borderRadius: 16,
         padding: 16,
@@ -45,7 +45,7 @@ const SmartAlarmSensor: React.FC = () => {
                 width: 50,
                 height: 50,
                 borderRadius: 12,
-                borderWidth: "1px",
+                borderWidth: 1,
                 borderColor: "#6B728A",
                 display: "flex",
                 justifyContent: "center",

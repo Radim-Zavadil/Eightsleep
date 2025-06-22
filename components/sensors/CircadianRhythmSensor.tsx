@@ -17,7 +17,7 @@ const CircadianRhythmSensor: React.FC = () => {
     <LinearGradient
       colors={["#349EBF", "#0D5D7C", "#043448"]}
       style={{
-        width: 380,
+        width: '100%',
         height: 240,
         backgroundColor: '#0D5D7C',
         borderRadius: 16,
@@ -46,7 +46,7 @@ const CircadianRhythmSensor: React.FC = () => {
                 width: 50,
                 height: 50,
                 borderRadius: 12,
-                borderWidth: "1px",
+                borderWidth: 1,
                 borderColor: "#6B728A",
                 display: "flex",
                 justifyContent: "center",
