@@ -3,6 +3,7 @@ import { View, Text, ScrollView, StyleSheet, SafeAreaView, TouchableOpacity } fr
 import { useFonts } from 'expo-font';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
 
 type SleepStat = {
   value: string;
@@ -109,9 +110,11 @@ const SleepScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.header}>
-            <TouchableOpacity>
-                <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
+            <Link href={"/"} asChild>
+              <TouchableOpacity>
+                  <Ionicons name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+            </Link>
             <Text style={styles.headerDate}>{sleepData.date}</Text>
             <TouchableOpacity>
                 <Ionicons name="information-circle-outline" size={24} color="white" />
@@ -176,11 +179,13 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     statCard: {
-        backgroundColor: '#1A1A2E',
+        backgroundColor: 'rgba(58, 58, 58, 0.72)',
         borderRadius: 20,
         padding: 15,
         width: '48%',
         marginBottom: 15,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.1)"
     },
     statValue: {
         fontFamily: 'Inter-Medium',
