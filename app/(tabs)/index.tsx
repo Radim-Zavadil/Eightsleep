@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions, TouchableOpacity } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { BlurView } from "expo-blur";
@@ -32,6 +32,7 @@ import { useCircadianContext } from '@/components/Context/CircadianContext';
 import { useSmartContext } from '@/components/Context/AlarmContext';
 
 const HomePage: React.FC = () => {
+  const router = useRouter();
   
   //Caffeine windows opening
   const { showCaffeineWidget } = useCaffeineContext();
@@ -103,10 +104,19 @@ const HomePage: React.FC = () => {
         <View style={styles.quickStartContainer}>
           <ThemedText style={styles.quickStartTitle}>Quick start</ThemedText>
           <View style={styles.quickStartButtons}>
-            <TouchableOpacity style={styles.quickStartButton}>
+            <TouchableOpacity 
+              style={styles.quickStartButton}
+              onPress={() => router.push('/breathwork')}
+            >
               <ThemedText style={styles.quickStartButtonText}>Breathwork</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickStartButton}>
+            <TouchableOpacity 
+              style={styles.quickStartButton}
+              onPress={() => {
+                // TODO: Implement start sleeping functionality
+                console.log('Start sleeping pressed');
+              }}
+            >
               <ThemedText style={styles.quickStartButtonText}>Start sleeping</ThemedText>
             </TouchableOpacity>
           </View>
