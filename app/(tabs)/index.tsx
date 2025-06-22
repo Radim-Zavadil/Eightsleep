@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions } from "react-native";
+import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -100,7 +100,17 @@ const HomePage: React.FC = () => {
         {/*CAFFEINE WINDOWS */}
         {showCaffeineWidget && <CaffeineWindowsSection />}
         
-
+        <View style={styles.quickStartContainer}>
+          <ThemedText style={styles.quickStartTitle}>Quick start</ThemedText>
+          <View style={styles.quickStartButtons}>
+            <TouchableOpacity style={styles.quickStartButton}>
+              <ThemedText style={styles.quickStartButtonText}>Breathwork</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.quickStartButton}>
+              <ThemedText style={styles.quickStartButtonText}>Start sleeping</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </ThemedView>
   );
@@ -518,6 +528,36 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 40,
     marginBottom: 24,
+  },
+  quickStartContainer: {
+    paddingBottom: 40,
+    paddingTop: 20,
+  },
+  quickStartTitle: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 10,
+    opacity: 0.8,
+  },
+  quickStartButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 15,
+  },
+  quickStartButton: {
+    backgroundColor: '#19151A',
+    borderColor: 'rgba(51, 51, 51, 0.52)',
+    borderWidth: 7,
+    borderRadius: 50,
+    paddingVertical: 18,
+    flex: 1,
+    alignItems: 'center',
+  },
+  quickStartButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '500',
+    fontSize: 16,
   },
 });
 
