@@ -17,7 +17,7 @@ const VitaminDCard: React.FC = () => {
     <LinearGradient
       colors={["#9A4514", "#582A10", "#170903"]}
       style={{
-        width: 380,
+        width: '100%',
         height: 240,
         borderRadius: 16,
         padding: 16,
@@ -45,7 +45,7 @@ const VitaminDCard: React.FC = () => {
             width: 50,
             height: 50,
             borderRadius: 12,
-            borderWidth: "1px",
+            borderWidth: 1,
             borderColor: "#6B728A",
             display: "flex",
             justifyContent: "center",

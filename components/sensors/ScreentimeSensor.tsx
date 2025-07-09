@@ -18,7 +18,7 @@ const ScreentimeCard: React.FC = () => {
     <LinearGradient
       colors={["#3B4E9B", "#162157", "#000926"]}
       style={{
-        width: 380,
+        width: '100%',
         height: 240,
         borderRadius: 16,
         padding: 16,
@@ -46,7 +46,7 @@ const ScreentimeCard: React.FC = () => {
                 width: 50,
                 height: 50,
                 borderRadius: 12,
-                borderWidth: "1px",
+                borderWidth: 1,
                 borderColor: "#6B728A",
                 display: "flex",
                 justifyContent: "center",

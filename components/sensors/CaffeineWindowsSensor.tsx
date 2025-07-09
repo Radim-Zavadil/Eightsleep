@@ -18,7 +18,7 @@ const CaffeineWindowsSensor: React.FC = () => {
     <LinearGradient
       colors={["#5F4498", "#382656", "#1E1332"]}
       style={{
-        width: 380,
+        width: '100%',
         height: 240,
         borderRadius: 16,
         padding: 16,
