@@ -30,6 +30,7 @@ import { useCaffeineContext } from '@/components/Context/CaffeineContext';
 import { useScreenContext } from '@/components/Context/ScreenContext';
 import { useCircadianContext } from '@/components/Context/CircadianContext';
 import { useSmartContext } from '@/components/Context/AlarmContext';
+import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
 
 const HomePage: React.FC = () => {
   const router = useRouter();
@@ -39,6 +40,7 @@ const HomePage: React.FC = () => {
   const { showScreenWidget } = useScreenContext();
   const { showCircadianWidget } = useCircadianContext();
   const { showSmartWidget } = useSmartContext();
+  const { score } = useBedroomScore();
 
   return (
     <ThemedView style={styles.container}>
@@ -86,7 +88,7 @@ const HomePage: React.FC = () => {
         
         
         {/**RECOVERY SECTION */}
-        <RecoverySection />
+        <RecoverySection score={score} />
 
         
         <NsdrComponent />

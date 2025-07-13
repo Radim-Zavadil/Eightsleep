@@ -1,40 +1,65 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import RecoverySection from '@/components/RecoverySection';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
 
 // Placeholder for RuleBlock component
-const RuleBlock = ({ rule, value, onValueChange }: any) => (
+const RuleBlock = ({ rule, onToggle }: any) => (
   <View style={styles.ruleBlock}>
-    <Text style={styles.ruleName}>{rule.name}</Text>
-    <Text style={styles.ruleGoal}>{rule.goal}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View>
+        <Text style={styles.ruleName}>{rule.name}</Text>
+        <Text style={styles.ruleGoal}>{rule.goal}</Text>
+      </View>
+      <TouchableOpacity
+        style={[styles.checkbox, rule.checked && styles.checkboxChecked]}
+        onPress={onToggle}
+      >
+        {rule.checked && <Text style={styles.checkboxTick}>✓</Text>}
+      </TouchableOpacity>
+    </View>
     {/* User value and arc gauge would go here */}
     <TouchableOpacity style={styles.noValues}><Text style={styles.noValuesText}>No values</Text></TouchableOpacity>
   </View>
 );
 
 const defaultRules = [
-  { name: 'Temperature', goal: '~21°C' },
-  { name: 'Darkness in the room', goal: 'No lights in your room' },
-  { name: 'Noise', goal: '0-30dB' },
-  { name: 'Sun exposure', goal: '20 minutes' },
-  { name: 'Exercise', goal: '20 minutes' },
-  { name: 'Blue light', goal: 'limit blue light 1-2h before bed' },
-  { name: 'Not eating large meals', goal: '2-3h avoid large meals (just snack if hungry)' },
-  { name: '240ml fluids in 2h before bed', goal: 'reduce fluids close to bedtime (240ml in 2h)' },
-  { name: 'No alcohol', goal: 'No alcohol' },
-  { name: 'No caffeine', goal: 'avoid 6+ hours before bed' },
+  { name: 'Temperature', goal: '~21°C', checked: false },
+  { name: 'Darkness in the room', goal: 'No lights in your room', checked: false },
+  { name: 'Noise', goal: '0-30dB', checked: false },
+  { name: 'Sun exposure', goal: '20 minutes', checked: false },
+  { name: 'Exercise', goal: '20 minutes', checked: false },
+  { name: 'Blue light', goal: 'limit blue light 1-2h before bed', checked: false },
+  { name: 'Not eating large meals', goal: '2-3h avoid large meals (just snack if hungry)', checked: false },
+  { name: '240ml fluids in 2h before bed', goal: 'reduce fluids close to bedtime (240ml in 2h)', checked: false },
+  { name: 'No alcohol', goal: 'No alcohol', checked: false },
+  { name: 'No caffeine', goal: 'avoid 6+ hours before bed', checked: false },
 ];
 
 export default function BedroomPage() {
   const [rules, setRules] = useState(defaultRules);
   const [customRuleName, setCustomRuleName] = useState('');
   const [customRuleGoal, setCustomRuleGoal] = useState('');
+  const { score, setScore } = useBedroomScore();
 
-  // Placeholder for score calculation
-  const score = 0;
+  // Calculate score as percent of checked rules
+  useEffect(() => {
+    const newScore = Math.round((rules.filter(r => r.checked).length / rules.length) * 100);
+    setScore(newScore);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rules]);
+
+  const toggleRule = (idx: number) => {
+    setRules(rules =>
+      rules.map((rule, i) =>
+        i === idx ? { ...rule, checked: !rule.checked } : rule
+      )
+    );
+  };
 
   const addCustomRule = () => {
     if (customRuleName && customRuleGoal) {
-      setRules([...rules, { name: customRuleName, goal: customRuleGoal }]);
+      setRules([...rules, { name: customRuleName, goal: customRuleGoal, checked: false }]);
       setCustomRuleName('');
       setCustomRuleGoal('');
     }
@@ -42,20 +67,35 @@ export default function BedroomPage() {
 
   return (
     <ScrollView style={styles.container}>
+
+      <RecoverySection score={score}/>
+
       <Text style={styles.header}>Bedroom Checklist</Text>
       <Text style={styles.score}>Score: {score}%</Text>
       {rules.map((rule, idx) => (
-        <RuleBlock key={idx} rule={rule} />
+        <RuleBlock key={idx} rule={rule} onToggle={() => toggleRule(idx)} />
       ))}
       <View style={styles.customRuleContainer}>
         <Text style={styles.addCustomRuleTitle}>Add Custom Rule</Text>
         <View style={styles.inputRow}>
           <Text style={styles.inputLabel}>Name:</Text>
-          <TouchableOpacity style={styles.inputBox}><Text>{customRuleName || 'Enter name'}</Text></TouchableOpacity>
+          <TextInput
+            style={styles.inputBox}
+            value={customRuleName}
+            onChangeText={setCustomRuleName}
+            placeholder="Enter name"
+            placeholderTextColor="#888"
+          />
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.inputLabel}>Goal:</Text>
-          <TouchableOpacity style={styles.inputBox}><Text>{customRuleGoal || 'Enter goal'}</Text></TouchableOpacity>
+          <TextInput
+            style={styles.inputBox}
+            value={customRuleGoal}
+            onChangeText={setCustomRuleGoal}
+            placeholder="Enter goal"
+            placeholderTextColor="#888"
+          />
         </View>
         <TouchableOpacity style={styles.addButton} onPress={addCustomRule}>
           <Text style={styles.addButtonText}>Add Rule</Text>
@@ -81,4 +121,24 @@ const styles = StyleSheet.create({
   inputBox: { backgroundColor: '#333', borderRadius: 8, padding: 6, flex: 1, marginLeft: 8 },
   addButton: { backgroundColor: '#1EED67', borderRadius: 8, padding: 10, marginTop: 8, alignItems: 'center' },
   addButtonText: { color: '#181818', fontWeight: 'bold' },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#888',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#222',
+    marginLeft: 12,
+  },
+  checkboxChecked: {
+    backgroundColor: '#1EED67',
+    borderColor: '#1EED67',
+  },
+  checkboxTick: {
+    color: '#181818',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 }); 
