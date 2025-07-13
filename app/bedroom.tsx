@@ -40,6 +40,7 @@ export default function BedroomPage() {
   const [rules, setRules] = useState(defaultRules);
   const [customRuleName, setCustomRuleName] = useState('');
   const [customRuleGoal, setCustomRuleGoal] = useState('');
+  const [showCustomRuleForm, setShowCustomRuleForm] = useState(false);
   const { score, setScore } = useBedroomScore();
 
   // Calculate score as percent of checked rules
@@ -70,37 +71,52 @@ export default function BedroomPage() {
 
       <RecoverySection score={score}/>
 
-      <Text style={styles.header}>Bedroom Checklist</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <Text style={styles.header}>Bedroom Checklist</Text>
+        <TouchableOpacity
+          style={styles.plusButton}
+          onPress={() => setShowCustomRuleForm(true)}
+        >
+          <Text style={styles.plusButtonText}>＋</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.score}>Score: {score}%</Text>
       {rules.map((rule, idx) => (
         <RuleBlock key={idx} rule={rule} onToggle={() => toggleRule(idx)} />
       ))}
-      <View style={styles.customRuleContainer}>
-        <Text style={styles.addCustomRuleTitle}>Add Custom Rule</Text>
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Name:</Text>
-          <TextInput
-            style={styles.inputBox}
-            value={customRuleName}
-            onChangeText={setCustomRuleName}
-            placeholder="Enter name"
-            placeholderTextColor="#888"
-          />
+      {showCustomRuleForm && (
+        <View style={styles.customRuleContainer}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.addCustomRuleTitle}>Add Custom Rule</Text>
+            <TouchableOpacity onPress={() => setShowCustomRuleForm(false)}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inputRow}>
+            <Text style={styles.inputLabel}>Name:</Text>
+            <TextInput
+              style={styles.inputBox}
+              value={customRuleName}
+              onChangeText={setCustomRuleName}
+              placeholder="Enter name"
+              placeholderTextColor="#888"
+            />
+          </View>
+          <View style={styles.inputRow}>
+            <Text style={styles.inputLabel}>Goal:</Text>
+            <TextInput
+              style={styles.inputBox}
+              value={customRuleGoal}
+              onChangeText={setCustomRuleGoal}
+              placeholder="Enter goal"
+              placeholderTextColor="#888"
+            />
+          </View>
+          <TouchableOpacity style={styles.addButton} onPress={() => { addCustomRule(); setShowCustomRuleForm(false); }}>
+            <Text style={styles.addButtonText}>Add Rule</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.inputRow}>
-          <Text style={styles.inputLabel}>Goal:</Text>
-          <TextInput
-            style={styles.inputBox}
-            value={customRuleGoal}
-            onChangeText={setCustomRuleGoal}
-            placeholder="Enter goal"
-            placeholderTextColor="#888"
-          />
-        </View>
-        <TouchableOpacity style={styles.addButton} onPress={addCustomRule}>
-          <Text style={styles.addButtonText}>Add Rule</Text>
-        </TouchableOpacity>
-      </View>
+      )}
     </ScrollView>
   );
 }
@@ -140,5 +156,26 @@ const styles = StyleSheet.create({
     color: '#181818',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  plusButton: {
+    backgroundColor: '#1EED67',
+    borderRadius: 16,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  plusButtonText: {
+    color: '#181818',
+    fontSize: 24,
+    fontWeight: 'bold',
+    lineHeight: 28,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
+    padding: 4,
   },
 }); 
