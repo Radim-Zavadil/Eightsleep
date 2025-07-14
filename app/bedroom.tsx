@@ -42,6 +42,7 @@ export default function BedroomPage() {
   const [customRuleGoal, setCustomRuleGoal] = useState('');
   const [showCustomRuleForm, setShowCustomRuleForm] = useState(false);
   const { score, setScore } = useBedroomScore();
+  const [toggleValue, setToggleValue] = useState('Yesterday');
 
   // Calculate score as percent of checked rules
   useEffect(() => {
@@ -68,8 +69,27 @@ export default function BedroomPage() {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.recoverySectionWrapper}>
+        <RecoverySection score={score}/>
+      </View>
 
-      <RecoverySection score={score}/>
+      {/* Toggle Switch for Yesterday/Today */}
+      <View style={styles.toggleContainer}>
+        <TouchableOpacity
+          style={[styles.toggleButton, toggleValue === 'Yesterday' && styles.toggleButtonActive]}
+          onPress={() => setToggleValue('Yesterday')}
+        >
+          <Text style={[styles.toggleText, toggleValue === 'Yesterday' && styles.toggleTextActive]}>Yesterday</Text>
+          {toggleValue === 'Yesterday' && <View style={styles.toggleIndicator} />}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleButton, toggleValue === 'Today' && styles.toggleButtonActive]}
+          onPress={() => setToggleValue('Today')}
+        >
+          <Text style={[styles.toggleText, toggleValue === 'Today' && styles.toggleTextActive]}>Today</Text>
+          {toggleValue === 'Today' && <View style={styles.toggleIndicator} />}
+        </TouchableOpacity>
+      </View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <Text style={styles.header}>Bedroom Checklist</Text>
@@ -80,7 +100,6 @@ export default function BedroomPage() {
           <Text style={styles.plusButtonText}>＋</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.score}>Score: {score}%</Text>
       {rules.map((rule, idx) => (
         <RuleBlock key={idx} rule={rule} onToggle={() => toggleRule(idx)} />
       ))}
@@ -122,19 +141,19 @@ export default function BedroomPage() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#181818', padding: 16 },
+  container: { flex: 1, backgroundColor: '#141414', padding: 8 },
+  recoverySectionWrapper: { marginHorizontal: 0, marginBottom: 8 },
   header: { fontSize: 24, color: '#fff', fontWeight: 'bold', marginBottom: 16 },
-  score: { fontSize: 20, color: '#fff', marginBottom: 16 },
-  ruleBlock: { backgroundColor: '#222', borderRadius: 16, padding: 16, marginBottom: 12 },
+  ruleBlock: { backgroundColor: '#181818', borderRadius: 16, padding: 16, marginBottom: 12 },
   ruleName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   ruleGoal: { color: '#aaa', fontSize: 14, marginBottom: 8 },
-  noValues: { backgroundColor: '#333', borderRadius: 8, padding: 6, alignSelf: 'flex-start' },
+  noValues: { backgroundColor: '#232323', borderRadius: 8, padding: 6, alignSelf: 'flex-start' },
   noValuesText: { color: '#bbb', fontSize: 12 },
-  customRuleContainer: { marginTop: 24, backgroundColor: '#232323', borderRadius: 16, padding: 16 },
+  customRuleContainer: { marginTop: 24, backgroundColor: '#181818', borderRadius: 16, padding: 16 },
   addCustomRuleTitle: { color: '#fff', fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
   inputRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   inputLabel: { color: '#fff', width: 50 },
-  inputBox: { backgroundColor: '#333', borderRadius: 8, padding: 6, flex: 1, marginLeft: 8 },
+  inputBox: { backgroundColor: '#232323', borderRadius: 8, padding: 6, flex: 1, marginLeft: 8, color: '#fff' },
   addButton: { backgroundColor: '#1EED67', borderRadius: 8, padding: 10, marginTop: 8, alignItems: 'center' },
   addButtonText: { color: '#181818', fontWeight: 'bold' },
   checkbox: {
@@ -145,7 +164,7 @@ const styles = StyleSheet.create({
     borderColor: '#888',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#222',
+    backgroundColor: '#181818',
     marginLeft: 12,
   },
   checkboxChecked: {
@@ -177,5 +196,48 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     padding: 4,
+  },
+  // Toggle styles
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#000000',
+    borderRadius: 24,
+    alignSelf: 'center',
+    marginVertical: 16,
+    padding: 6,
+    width: 220,
+    justifyContent: 'space-between',
+  },
+  toggleButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 20,
+    position: 'relative',
+  },
+  toggleButtonActive: {
+    // No background, indicator is below
+  },
+  toggleText: {
+    color: '#888',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  toggleTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  toggleIndicator: {
+    position: 'absolute',
+    bottom: -2,
+    left: '50%',
+    transform: [{ translateX: -55 }],
+    width: 110,
+    height: 40,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "#313131",
+    backgroundColor: '#1F1F1F',
+    zIndex: -1,
   },
 }); 
