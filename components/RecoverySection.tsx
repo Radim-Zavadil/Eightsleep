@@ -94,6 +94,17 @@ const RecoverySection = ({ score = 10, temperatureOk = false, darknessOk = false
     );
   };
 
+  // Utility function to get color based on score
+  const getScoreColor = (scoreValue: number) => {
+    if (scoreValue >= 70) {
+      return { main: '#1EED67', shadow: 'rgba(30, 237, 103, 0.3)' }; // Green
+    } else if (scoreValue >= 30) {
+      return { main: '#FFD600', shadow: 'rgba(255, 214, 0, 0.3)' }; // Yellow
+    } else {
+      return { main: '#FF3B30', shadow: 'rgba(255, 59, 48, 0.3)' }; // Red
+    }
+  };
+
   useEffect(() => {
     // Update the displayed score value during animation
     const listener = animatedValue.addListener(({ value }) => {
@@ -282,16 +293,28 @@ const RecoverySection = ({ score = 10, temperatureOk = false, darknessOk = false
             marginRight: 6,
             fontFamily: 'Inter',
           }}>Current Room Score</Text>
-          <Image
-            source={require('../assets/images/ActiveDot.png')}
-          />
+          {/* Dynamic Dot */}
+          <Svg width={18} height={18}>
+            <Circle
+              cx={9}
+              cy={9}
+              r={9}
+              fill={getScoreColor(displayScore).shadow}
+            />
+            <Circle
+              cx={9}
+              cy={9}
+              r={5}
+              fill={getScoreColor(displayScore).main}
+            />
+          </Svg>
         </View>
         
         {/* Score Number */}
         <Text style={{
           fontSize: 64,
           fontWeight: '400',
-          color: '#1EED67',
+          color: getScoreColor(displayScore).main,
           marginBottom: 8,
           fontFamily: 'Inter',
         }}>
