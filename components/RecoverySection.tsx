@@ -6,7 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import Svg, { Circle, Path, G } from 'react-native-svg';
 
-const RecoverySection = ({ score = 10 }) => {
+const RecoverySection = ({ score = 10, temperatureOk = false, darknessOk = false }) => {
   const navigation = useNavigation();
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [displayScore, setDisplayScore] = useState(0);
@@ -22,7 +22,7 @@ const RecoverySection = ({ score = 10 }) => {
   const radius = 130.5;
   
   // Calculate position and angle on arc based on score
-  const getPositionAndAngleOnArc = (scoreValue) => {
+  const getPositionAndAngleOnArc = (scoreValue: number) => {
     // Normalize score to 0-1 range (assuming score is 0-100)
     const normalizedScore = scoreValue / 100;
     
@@ -44,7 +44,7 @@ const RecoverySection = ({ score = 10 }) => {
   };
 
   // Create animated indicator component
-  const IndicatorPath = ({ scoreValue }) => {
+  const IndicatorPath = ({ scoreValue }: { scoreValue: number }) => {
     const { x, y, tangentAngle } = getPositionAndAngleOnArc(scoreValue);
     
     // Convert tangent angle from radians to degrees for SVG transform
@@ -92,6 +92,17 @@ const RecoverySection = ({ score = 10 }) => {
         />
       </G>
     );
+  };
+
+  // Utility function to get color based on score
+  const getScoreColor = (scoreValue: number) => {
+    if (scoreValue >= 70) {
+      return { main: '#1EED67', shadow: 'rgba(30, 237, 103, 0.3)' }; // Green
+    } else if (scoreValue >= 30) {
+      return { main: '#FFD600', shadow: 'rgba(255, 214, 0, 0.3)' }; // Yellow
+    } else {
+      return { main: '#FF3B30', shadow: 'rgba(255, 59, 48, 0.3)' }; // Red
+    }
   };
 
   useEffect(() => {
@@ -282,16 +293,28 @@ const RecoverySection = ({ score = 10 }) => {
             marginRight: 6,
             fontFamily: 'Inter',
           }}>Current Room Score</Text>
-          <Image
-            source={require('../assets/images/ActiveDot.png')}
-          />
+          {/* Dynamic Dot */}
+          <Svg width={18} height={18}>
+            <Circle
+              cx={9}
+              cy={9}
+              r={9}
+              fill={getScoreColor(displayScore).shadow}
+            />
+            <Circle
+              cx={9}
+              cy={9}
+              r={5}
+              fill={getScoreColor(displayScore).main}
+            />
+          </Svg>
         </View>
         
         {/* Score Number */}
         <Text style={{
           fontSize: 64,
           fontWeight: '400',
-          color: '#1EED67',
+          color: getScoreColor(displayScore).main,
           marginBottom: 8,
           fontFamily: 'Inter',
         }}>
@@ -327,10 +350,9 @@ const RecoverySection = ({ score = 10 }) => {
               marginLeft: 6,
               fontSize: 14,
               fontFamily: 'Inter',
-            }}>21°</Text>
+            }}>{temperatureOk ? 'Great' : 'Bad'}</Text>
           </View>
-          
-          {/* Air Quality */}
+          {/* Darkness */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -343,10 +365,9 @@ const RecoverySection = ({ score = 10 }) => {
               marginLeft: 6,
               fontSize: 14,
               fontFamily: 'Inter',
-            }}>Great</Text>
+            }}>{darknessOk ? 'Great' : 'Bad'}</Text>
           </View>
-          
-          {/* Humidity */}
+          {/* Humidity (unchanged) */}
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
