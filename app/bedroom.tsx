@@ -141,9 +141,9 @@ export default function BedroomPage() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#141414', padding: 8 },
+  container: { flex: 1, backgroundColor: '#000000', padding: 8 },
   recoverySectionWrapper: { marginHorizontal: 0, marginBottom: 8 },
-  header: { fontSize: 24, color: '#fff', fontWeight: 'bold', marginBottom: 16 },
+  header: { fontSize: 24, color: '#fff', fontWeight: '500', marginBottom: 16 },
   ruleBlock: { backgroundColor: '#181818', borderRadius: 16, padding: 16, marginBottom: 12 },
   ruleName: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   ruleGoal: { color: '#aaa', fontSize: 14, marginBottom: 8 },
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   plusButton: {
-    backgroundColor: '#1EED67',
+    backgroundColor: '#000000',
     borderRadius: 16,
     width: 32,
     height: 32,
@@ -186,9 +186,9 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   plusButtonText: {
-    color: '#181818',
+    color: '#FFFFFF',
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: '500',
     lineHeight: 28,
   },
   closeButtonText: {
