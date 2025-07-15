@@ -70,7 +70,11 @@ export default function BedroomPage() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.recoverySectionWrapper}>
-        <RecoverySection score={score}/>
+        <RecoverySection 
+          score={score}
+          temperatureOk={rules.find(r => r.name === 'Temperature')?.checked}
+          darknessOk={rules.find(r => r.name === 'Darkness in the room')?.checked}
+        />
       </View>
 
       {/* Toggle Switch for Yesterday/Today */}
