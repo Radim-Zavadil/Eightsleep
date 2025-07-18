@@ -1,267 +1,187 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
-import { Plus, Send, X } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Modal, TextInput, Platform, KeyboardAvoidingView } from 'react-native';
+import { Plus, X, Send, Pencil, Trash, ChevronLeft } from 'lucide-react-native';
 import { JournalProvider, useJournalContext } from '@/context/JournalContext';
-import { Entry } from '@/types/journal';
+import { useRouter } from 'expo-router';
 
-// Create a separate component for the Journal content
-function JournalContent() {
-  const { entries, addEntry } = useJournalContext();
-  const [showNewEntry, setShowNewEntry] = useState(false);
-  const [newEntryTitle, setNewEntryTitle] = useState('');
-  const [newEntryContent, setNewEntryContent] = useState('');
-  
-  // Filter entries for today
-  const today = new Date().toISOString().split('T')[0];
-  const todayEntries = entries.filter(entry => 
-    entry.date.startsWith(today)
-  );
-  
-  // Handle creating a new journal entry
-  const handleCreateEntry = () => {
-    if (newEntryContent.trim()) {
-      addEntry({
-        title: newEntryTitle.trim() || 'Journal Entry',
-        content: newEntryContent
-      });
-      setNewEntryTitle('');
-      setNewEntryContent('');
-      setShowNewEntry(false);
-    }
-  };
-  
-  // Format timestamp for display
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-  
-  // Format date for display
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-  
-  // Render an individual journal entry
-  const renderJournalEntry = ({ item }: { item: Entry }) => (
-    <View style={{
-      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 12,
-    }}>
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-      }}>
-        <Text style={{
-          color: '#aaa',
-          fontSize: 12,
-          fontFamily: 'Inter',
-        }}>{formatTime(item.date)}</Text>
-        <Text style={{
-          color: '#aaa',
-          fontSize: 12,
-          fontFamily: 'Inter',
-        }}>{formatDate(item.date)}</Text>
-      </View>
-      <Text style={{
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '500',
-        marginBottom: 4,
-        fontFamily: 'Inter',
-      }}>{item.title}</Text>
-      <Text style={{
-        color: '#fff',
-        fontSize: 14,
-        lineHeight: 20,
-        fontFamily: 'Inter',
-      }}>{item.content}</Text>
-    </View>
-  );
-  
+function JournalModal({ visible, onClose, onSave, initialTitle = '', initialContent = '', isEditing = false, onDelete }: {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (title: string, content: string) => void;
+  initialTitle?: string;
+  initialContent?: string;
+  isEditing?: boolean;
+  onDelete?: () => void;
+}) {
+  const [title, setTitle] = useState(initialTitle);
+  const [content, setContent] = useState(initialContent);
+
+  React.useEffect(() => {
+    setTitle(initialTitle);
+    setContent(initialContent);
+  }, [initialTitle, initialContent, visible]);
+
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{
-        flex: 1,
-        position: 'relative',
-      }}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
     >
-      <View style={{
-        flex: 1,
-        position: 'relative',
-      }}>
-        {/* Entry list */}
-        {todayEntries.length > 0 ? (
-          <FlatList
-            data={todayEntries}
-            renderItem={renderJournalEntry}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{
-              paddingBottom: 80,
-            }}
-          />
-        ) : (
-          <View style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingHorizontal: 20,
-          }}>
-            <Text style={{
-              color: '#fff',
-              fontSize: 18,
-              fontFamily: 'Inter',
-              marginBottom: 8,
-            }}>No journal entries today</Text>
-            <Text style={{
-              color: '#aaa',
-              fontSize: 14,
-              textAlign: 'center',
-              fontFamily: 'Inter',
-            }}>
-              Add your first entry by tapping the + button below
-            </Text>
-          </View>
-        )}
-        
-        {/* New entry form */}
-        {showNewEntry && (
-          <View style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: '#111',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            padding: 20,
-            paddingBottom: Platform.OS === 'ios' ? 40 : 20,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 4,
-            elevation: 5,
-          }}>
-            <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 16,
-            }}>
-              <Text style={{
-                color: '#fff',
-                fontSize: 18,
-                fontWeight: '500',
-                fontFamily: 'Inter',
-              }}>New Journal Entry</Text>
-              <TouchableOpacity 
-                onPress={() => setShowNewEntry(false)}
-                style={{
-                  padding: 5,
-                }}
-              >
-                <X size={20} color="#fff" />
-              </TouchableOpacity>
-            </View>
-            
-            <TextInput
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: 12,
-                padding: 12,
-                color: '#fff',
-                fontSize: 16,
-                fontFamily: 'Inter',
-                marginBottom: 10,
-              }}
-              placeholder="Title (optional)"
-              placeholderTextColor="#888"
-              value={newEntryTitle}
-              onChangeText={setNewEntryTitle}
-            />
-            
-            <TextInput
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                borderRadius: 12,
-                padding: 16,
-                color: '#fff',
-                fontSize: 16,
-                minHeight: 120,
-                fontFamily: 'Inter',
-                textAlignVertical: 'top',
-              }}
-              placeholder="How are you feeling?"
-              placeholderTextColor="#888"
-              value={newEntryContent}
-              onChangeText={setNewEntryContent}
-              multiline
-              autoFocus
-            />
-            
-            <TouchableOpacity 
-              style={{
-                backgroundColor: '#007AFF',
-                borderRadius: 12,
-                padding: 14,
-                flexDirection: 'row',
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: 16,
-              }}
-              onPress={handleCreateEntry}
-              disabled={!newEntryContent.trim()}
-            >
-              <Send size={18} color="#fff" />
-              <Text style={{
-                color: '#fff',
-                fontSize: 16,
-                fontWeight: '500',
-                marginLeft: 8,
-                fontFamily: 'Inter',
-              }}>Save Entry</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.modalOverlay}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}</Text>
+            <TouchableOpacity onPress={onClose} style={{ padding: 5 }}>
+              <X size={22} color="#fff" />
             </TouchableOpacity>
           </View>
-        )}
-        
-        {/* Add button */}
-        {!showNewEntry && (
-          <TouchableOpacity 
-            style={{
-              position: 'absolute',
-              bottom: 20,
-              right: 20,
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: '#007AFF',
-              justifyContent: 'center',
-              alignItems: 'center',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
-              elevation: 5,
-            }}
-            onPress={() => setShowNewEntry(true)}
-          >
-            <Plus size={24} color="#fff" />
-          </TouchableOpacity>
-        )}
-      </View>
-    </KeyboardAvoidingView>
+          <TextInput
+            style={styles.inputTitle}
+            placeholder="Title (optional)"
+            placeholderTextColor="#888"
+            value={title}
+            onChangeText={setTitle}
+            maxLength={60}
+          />
+          <TextInput
+            style={[styles.inputContent, { minHeight: 100 }]}
+            placeholder="How are you feeling?"
+            placeholderTextColor="#888"
+            value={content}
+            onChangeText={setContent}
+            multiline
+            textAlignVertical="top"
+            autoFocus
+          />
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
+            {isEditing && (
+              <TouchableOpacity style={styles.deleteButton} onPress={onDelete}>
+                <Trash size={18} color="#ff3b30" />
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[styles.saveButton, !isEditing && styles.addButtonWhite]}
+              onPress={() => {
+                if (content.trim()) onSave(title.trim(), content.trim());
+              }}
+              disabled={!content.trim()}
+            >
+              <Send size={18} color={isEditing ? '#fff' : '#000'} />
+              <Text style={[styles.saveButtonText, !isEditing && styles.addButtonTextBlack]}>{isEditing ? 'Save' : 'Add'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
-// Main component that wraps the content with the provider
+function JournalContent() {
+  const { entries, addEntry, updateEntry, deleteEntry } = useJournalContext();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<null | { id: string; title: string; content: string }>(null);
+  const router = useRouter();
+
+  // Open modal for new entry
+  const openNewEntry = () => {
+    setEditingEntry(null);
+    setModalVisible(true);
+  };
+
+  // Open modal for editing
+  const openEditEntry = (entry: { id: string; title: string; content: string }) => {
+    setEditingEntry(entry);
+    setModalVisible(true);
+  };
+
+  // Save new or edited entry
+  const handleSave = async (title: string, content: string) => {
+    if (editingEntry) {
+      await updateEntry(editingEntry.id, { title, content });
+    } else {
+      await addEntry({ title, content });
+    }
+    setModalVisible(false);
+  };
+
+  // Delete entry
+  const handleDelete = async () => {
+    if (editingEntry) {
+      await deleteEntry(editingEntry.id);
+      setModalVisible(false);
+    }
+  };
+
+  // Render a single journal block
+  const renderJournalEntry = ({ item }: { item: { id: string; title: string; content: string; date: string } }) => (
+    <TouchableOpacity
+      style={styles.journalBlock}
+      onPress={() => openEditEntry(item)}
+      activeOpacity={0.85}
+    >
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={styles.journalTitle}>{item.title || 'Journal Entry'}</Text>
+        <Pencil size={16} color="#aaa" />
+      </View>
+      <Text style={styles.journalContent} numberOfLines={4}>{item.content}</Text>
+      <Text style={styles.journalDate}>{new Date(item.date).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <View style={styles.container}>
+      {/* Back Arrow */}
+      <TouchableOpacity
+        style={styles.backArrow}
+        onPress={() => router.replace('/')}
+        hitSlop={{ top: 12, left: 12, right: 12, bottom: 12 }}
+      >
+        <ChevronLeft size={28} color="#fff" />
+      </TouchableOpacity>
+      <Text style={styles.todayDate}>
+        {(() => {
+          const d = new Date();
+          const month = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+          const day = d.getDate();
+          const year = d.getFullYear();
+          return `${day} ${month}, ${year}`;
+        })()}
+      </Text>
+      <FlatList
+        data={entries}
+        renderItem={renderJournalEntry}
+        keyExtractor={item => item.id}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 8 }}
+        ListEmptyComponent={
+          <View style={{ flex: 1, alignItems: 'center', marginTop: 80 }}>
+            <Text style={{ color: '#fff', fontSize: 18, fontFamily: 'Inter', marginBottom: 8 }}>No journal entries yet</Text>
+            <Text style={{ color: '#aaa', fontSize: 14, textAlign: 'center', fontFamily: 'Inter' }}>
+              Add your first entry by tapping the + button below
+            </Text>
+          </View>
+        }
+      />
+      <TouchableOpacity style={styles.addButton} onPress={openNewEntry}>
+        <Plus size={28} color="#fff" />
+      </TouchableOpacity>
+      <JournalModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSave}
+        initialTitle={editingEntry?.title || ''}
+        initialContent={editingEntry?.content || ''}
+        isEditing={!!editingEntry}
+        onDelete={handleDelete}
+      />
+    </View>
+  );
+}
+
 export default function Journal() {
   return (
     <JournalProvider>
@@ -269,3 +189,171 @@ export default function Journal() {
     </JournalProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+    padding: 12,
+  },
+  backArrow: {
+    position: 'absolute',
+    top: 18,
+    left: 10,
+    zIndex: 10,
+    padding: 2,
+  },
+  journalBlock: {
+    backgroundColor: '#181818',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  journalTitle: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
+    fontFamily: 'Inter',
+    marginBottom: 6,
+  },
+  journalContent: {
+    color: '#eee',
+    fontSize: 15,
+    fontFamily: 'Inter',
+    marginBottom: 10,
+    lineHeight: 20,
+  },
+  journalDate: {
+    color: '#aaa',
+    fontSize: 12,
+    fontFamily: 'Inter',
+    marginTop: 2,
+    textAlign: 'right',
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 28,
+    right: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#232323',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#181818',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    fontFamily: 'Inter',
+  },
+  inputTitle: {
+    backgroundColor: '#232323',
+    borderRadius: 10,
+    padding: 12,
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Inter',
+    marginBottom: 10,
+  },
+  inputContent: {
+    backgroundColor: '#232323',
+    borderRadius: 10,
+    padding: 14,
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'Inter',
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
+    fontFamily: 'Inter',
+  },
+  deleteButton: {
+    backgroundColor: '#232323',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  deleteButtonText: {
+    color: '#ff3b30',
+    fontSize: 15,
+    fontWeight: '500',
+    marginLeft: 6,
+    fontFamily: 'Inter',
+  },
+  todayDate: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 17,
+    textAlign: 'center',
+    fontFamily: 'Inter',
+    marginTop: 18,
+    marginBottom: 18,
+  },
+  addButtonWhite: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  addButtonTextBlack: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
+    fontFamily: 'Inter',
+  },
+});
