@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 type SleepStat = {
   value: string;
@@ -13,31 +14,60 @@ type SleepStat = {
 
 type Contributor = {
   name: string;
-  status: 'Optimal' | 'Needs attention';
+  status: 'Optimal' | 'Needs Attention';
   progress: number;
 };
 
-const sleepData: {
-  date: string;
-  stats: SleepStat[];
-  contributors: Contributor[];
-} = {
-    date: 'Fri, 12 July',
+const getSleepData = (sleptSeconds?: number) => {
+  // Default values
+  let totalSleep = '7h 30m';
+  let timeInBed = '7h 55m';
+  let restorativeSleep = '53%';
+  let hrDrop = '5:52AM';
+  let statsStatus: ('Optimal' | 'Needs Attention')[] = ['Optimal', 'Optimal', 'Optimal', 'Needs Attention'];
+  let contributors = [
+    { name: 'Sleep Efficiency', status: 'Optimal', progress: 0.95 },
+    { name: 'Temperature', status: 'Optimal', progress: 0.9 },
+    { name: 'Restfulness', status: 'Optimal', progress: 0.85 },
+    { name: 'Total Sleep', status: 'Optimal', progress: 0.8 },
+    { name: 'HR Drop', status: 'Needs Attention', progress: 0.4 },
+    { name: 'Timing', status: 'Optimal', progress: 0.9 },
+    { name: 'Restoration Time', status: 'Optimal', progress: 0.75 },
+  ];
+
+  if (sleptSeconds !== undefined) {
+    // Calculate hours and minutes
+    const hours = Math.floor(sleptSeconds / 3600);
+    const minutes = Math.floor((sleptSeconds % 3600) / 60);
+    totalSleep = `${hours}h ${minutes}m`;
+    // Adjust time in bed to be a bit more than total sleep
+    timeInBed = `${hours}h ${minutes + 25 > 59 ? minutes - 35 : minutes + 25}m`;
+    // Adjust restorative sleep and contributors based on sleep length
+    if (sleptSeconds < 6 * 3600) {
+      restorativeSleep = '35%';
+      statsStatus = ['Needs Attention', 'Needs Attention', 'Needs Attention', 'Needs Attention'];
+      contributors = contributors.map(c => ({ ...c, status: 'Needs Attention', progress: c.progress * 0.6 }));
+    } else if (sleptSeconds < 7 * 3600) {
+      restorativeSleep = '45%';
+      statsStatus = ['Needs Attention', 'Optimal', 'Needs Attention', 'Needs Attention'];
+      contributors = contributors.map(c => ({ ...c, status: c.name === 'HR Drop' ? 'Needs Attention' : 'Optimal', progress: c.progress * 0.8 }));
+    } else {
+      restorativeSleep = '53%';
+      statsStatus = ['Optimal', 'Optimal', 'Optimal', 'Needs Attention'];
+      contributors = contributors.map(c => ({ ...c, status: c.name === 'HR Drop' ? 'Needs Attention' : 'Optimal' }));
+    }
+  }
+
+  return {
+    date: 'Today',
     stats: [
-        { value: '7h 30m', label: 'TOTAL SLEEP', status: 'Optimal' },
-        { value: '7h 55m', label: 'TIME IN BED', status: 'Optimal' },
-        { value: '53%', label: 'RESTORATIVE SLEEP', status: 'Optimal' },
-        { value: '5:52AM', label: 'HR DROP', status: 'Needs Attention' },
+      { value: totalSleep, label: 'TOTAL SLEEP', status: statsStatus[0] },
+      { value: timeInBed, label: 'TIME IN BED', status: statsStatus[1] },
+      { value: restorativeSleep, label: 'RESTORATIVE SLEEP', status: statsStatus[2] },
+      { value: hrDrop, label: 'HR DROP', status: statsStatus[3] },
     ],
-    contributors: [
-        { name: 'Sleep Efficiency', status: 'Optimal', progress: 0.95 },
-        { name: 'Temperature', status: 'Optimal', progress: 0.9 },
-        { name: 'Restfulness', status: 'Optimal', progress: 0.85 },
-        { name: 'Total Sleep', status: 'Optimal', progress: 0.8 },
-        { name: 'HR Drop', status: 'Needs attention', progress: 0.4 },
-        { name: 'Timing', status: 'Optimal', progress: 0.9 },
-        { name: 'Restoration Time', status: 'Optimal', progress: 0.75 },
-    ]
+    contributors,
+  };
 };
 
 const StatCard: React.FC<SleepStat> = ({ value, label, status }) => {
@@ -59,7 +89,7 @@ const StatCard: React.FC<SleepStat> = ({ value, label, status }) => {
     );
 };
 
-const ProgressBar: React.FC<{ progress: number; status: 'Optimal' | 'Needs attention' }> = ({ progress, status }) => {
+const ProgressBar: React.FC<{ progress: number; status: 'Optimal' | 'Needs Attention' }> = ({ progress, status }) => {
     const barColor = status === 'Optimal' ? '#00E676' : '#FF5252';
     return (
         <View style={styles.progressBarContainer}>
@@ -86,6 +116,9 @@ const ContributorItem: React.FC<Contributor> = ({ name, status, progress }) => {
 
 const SleepScreen = () => {
   const [fontsLoaded, setFontsLoaded] = React.useState(false);
+  const params = useLocalSearchParams();
+  const sleptSeconds = params.slept ? parseInt(params.slept as string, 10) : undefined;
+  const sleepData = getSleepData(sleptSeconds);
 
   React.useEffect(() => {
     async function loadFonts() {

@@ -161,6 +161,7 @@ export default function TabLayout() {
               ),
             }}
           />
+          <Tabs.Screen name="start-sleeping" options={{ href: null }} />
         </Tabs>
       
       </CircadianProvider>

@@ -115,8 +115,7 @@ const HomePage: React.FC = () => {
             <TouchableOpacity 
               style={styles.quickStartButton}
               onPress={() => {
-                // TODO: Implement start sleeping functionality
-                console.log('Start sleeping pressed');
+                router.push('./start-sleeping');
               }}
             >
               <ThemedText style={styles.quickStartButtonText}>Start sleeping</ThemedText>
