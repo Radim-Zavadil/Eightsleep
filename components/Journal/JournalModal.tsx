@@ -181,12 +181,12 @@ const styles = StyleSheet.create({
   saveButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#007AFF',
+    backgroundColor: '#FFFFFF',
     borderRadius: 8,
   },
   saveText: {
     fontFamily: 'Inter',
-    color: '#fff',
+    color: '#000',
   },
   scrollView: {
     flex: 1,
