@@ -2,12 +2,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 import { Platform } from 'react-native';
 
-const supabaseUrl = "https://deoiuvlytpcpegyhiafa.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlb2l1dmx5dHBjcGVneWhpYWZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MjcyNzcsImV4cCI6MjA2MzAwMzI3N30.BF0Ps-MQqxv2T2BjcJZDtTg9JgIpLaZmEVm71BjkZH0";
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
-// Add service role key for admin operations
-const supabaseServiceKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlb2l1dmx5dHBjcGVneWhpYWZhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NzQyNzI3NywiZXhwIjoyMDYzMDAzMjc3fQ.XwdBv9YmJSUmeOkOJwKQyIgFele5grblm9Lx1MCrHm8";
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error('Missing Supabase environment variables. Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file.');
+}
 
 if (!supabaseServiceKey) {
   console.warn('Service role key not found. Admin operations will not work. Please add EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY to your .env file.');
