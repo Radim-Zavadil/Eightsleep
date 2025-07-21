@@ -64,12 +64,11 @@ export default function OnboardingCycleLengthScreen() {
   return (
     <BackgroundImage>
       <View style={styles.container}>
-        <Text style={styles.title}>What is your average cycle length?</Text>
-        <Text style={styles.subtitle}>This is the number of days between the first day of your period and the first day of your next period</Text>
+        <Text style={styles.title}>What is your average sleep length in hours?</Text>
         
         <TextInput
           style={[styles.input, error ? styles.inputError : null]}
-          placeholder="e.g. 28"
+          placeholder="e.g. 8"
           value={cycleLength}
           onChangeText={(text) => {
             setCycleLength(text.replace(/[^0-9]/g, ''));
@@ -110,13 +109,6 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 8,
     textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'white',
-    marginBottom: 32,
-    textAlign: 'center',
-    opacity: 0.8,
   },
   input: {
     width: '100%',
