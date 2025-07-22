@@ -4,6 +4,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Activi
 import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
 import { supabase } from '@/utils/supabase';
 import { useAuth } from '@/context/AuthContext';
+import dayjs from 'dayjs';
 
 // Placeholder for RuleBlock component
 const RuleBlock = ({ rule, onToggle }: any) => (
@@ -45,8 +46,15 @@ export default function BedroomPage() {
   const [customRuleGoal, setCustomRuleGoal] = useState('');
   const [showCustomRuleForm, setShowCustomRuleForm] = useState(false);
   const { score, setScore } = useBedroomScore();
-  const [toggleValue, setToggleValue] = useState('Yesterday');
+  const [toggleValue, setToggleValue] = useState<'Today' | 'Yesterday'>('Today');
   const [loading, setLoading] = useState(true);
+
+  // Helper to get the selected date string (YYYY-MM-DD)
+  const getSelectedDate = () => {
+    if (toggleValue === 'Today') return dayjs().format('YYYY-MM-DD');
+    if (toggleValue === 'Yesterday') return dayjs().subtract(1, 'day').format('YYYY-MM-DD');
+    return dayjs().format('YYYY-MM-DD');
+  };
 
   if (!user) {
     return (
@@ -56,13 +64,16 @@ export default function BedroomPage() {
     );
   }
 
-  // Fetch rules from Supabase on mount
+  // Fetch rules from Supabase on mount and when toggleValue changes
   useEffect(() => {
+    if (!user) return;
     setLoading(true);
+    const selectedDate = getSelectedDate();
     supabase
       .from('bedroom_checklist_items')
       .select('*')
       .eq('user_id', user.id)
+      .eq('date', selectedDate)
       .then(async ({ data, error }) => {
         if (error) {
           setRules([]);
@@ -70,8 +81,8 @@ export default function BedroomPage() {
           return;
         }
         if (!data || data.length === 0) {
-          // Insert default rules for this user
-          const toInsert = defaultRules.map(r => ({ ...r, user_id: user.id }));
+          // Insert default rules for this user and date
+          const toInsert = defaultRules.map(r => ({ ...r, user_id: user.id, date: selectedDate }));
           const { data: inserted, error: insertError } = await supabase
             .from('bedroom_checklist_items')
             .insert(toInsert)
@@ -82,7 +93,7 @@ export default function BedroomPage() {
         }
         setLoading(false);
       });
-  }, [user]);
+  }, [user, toggleValue]);
 
   // Calculate score as percent of checked rules
   useEffect(() => {
@@ -100,18 +111,19 @@ export default function BedroomPage() {
       .update({ checked: !rule.checked })
       .eq('id', rule.id)
       .eq('user_id', user.id)
+      .eq('date', getSelectedDate())
       .select('*');
     if (!error && data && data.length > 0) {
       setRules(rules => rules.map((r, i) => (i === idx ? data[0] : r)));
     }
-  }, [rules, user]);
+  }, [rules, user, toggleValue]);
 
   // Add custom rule to DB
   const addCustomRule = useCallback(async () => {
     if (customRuleName && customRuleGoal && user) {
       const { data, error } = await supabase
         .from('bedroom_checklist_items')
-        .insert({ rule_name: customRuleName, goal: customRuleGoal, checked: false, user_id: user.id })
+        .insert({ rule_name: customRuleName, goal: customRuleGoal, checked: false, user_id: user.id, date: getSelectedDate() })
         .select('*');
       if (!error && data && data.length > 0) {
         setRules(rules => [...rules, data[0]]);
@@ -119,7 +131,7 @@ export default function BedroomPage() {
         setCustomRuleGoal('');
       }
     }
-  }, [customRuleName, customRuleGoal, user]);
+  }, [customRuleName, customRuleGoal, user, toggleValue]);
 
   return (
     <ScrollView style={styles.container}>

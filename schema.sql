@@ -92,6 +92,12 @@ CREATE TABLE IF NOT EXISTS bedroom_checklist_items (
   created_at timestamp with time zone DEFAULT timezone('utc', now())
 );
 
+-- Add a date column for per-day checklist tracking
+ALTER TABLE bedroom_checklist_items
+  ADD COLUMN IF NOT EXISTS date date DEFAULT (CURRENT_DATE);
+-- Optional: index for faster date queries
+CREATE INDEX IF NOT EXISTS idx_bedroom_checklist_user_date ON bedroom_checklist_items (user_id, date);
+
 -- Optional: index for faster user lookups
 CREATE INDEX IF NOT EXISTS idx_bedroom_checklist_user_id ON bedroom_checklist_items (user_id);
 
