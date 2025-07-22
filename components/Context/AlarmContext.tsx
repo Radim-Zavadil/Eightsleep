@@ -1,9 +1,12 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
 import { Alarm } from '@/types/alarm';
+import { supabase } from '../../supabaseClient';
+import { useAuth } from '../../context/AuthContext';
 
 interface AlarmContextType {
   showSmartWidget: boolean;
   setShowSmartWidget: (show: boolean) => void;
+  loading: boolean;
   alarms: Alarm[];
   addAlarm: (alarm: Omit<Alarm, 'id' | 'createdAt'>) => void;
   toggleAlarm: (id: string) => void;
@@ -18,7 +21,9 @@ interface AlarmProviderProps {
 }
 
 export const SmartProvider: React.FC<AlarmProviderProps> = ({ children }) => {
-  const [showSmartWidget, setShowSmartWidget] = useState(false);
+  const { user } = useAuth();
+  const [showSmartWidget, setShowSmartWidgetState] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [alarms, setAlarms] = useState<Alarm[]>([
     {
       id: '1',
@@ -37,7 +42,50 @@ export const SmartProvider: React.FC<AlarmProviderProps> = ({ children }) => {
       createdAt: new Date().toISOString(),
     },
   ]);
-  
+
+  // Fetch widget state from Supabase on mount
+  useEffect(() => {
+    const fetchWidget = async () => {
+      if (!user) {
+        setShowSmartWidgetState(false);
+        setLoading(false);
+        return;
+      }
+      const { data } = await supabase
+        .from('user_widgets')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('widget_id', 'smart_alarm')
+        .single();
+      setShowSmartWidgetState(!!data);
+      setLoading(false);
+    };
+    fetchWidget();
+  }, [user]);
+
+  // Update both local state and Supabase
+  const setShowSmartWidget = useCallback(
+    async (show: boolean) => {
+      if (!user) return;
+      setShowSmartWidgetState(show);
+      if (show) {
+        await supabase.from('user_widgets').upsert([
+          {
+            user_id: user.id,
+            widget_id: 'smart_alarm',
+          }
+        ], { onConflict: 'user_id,widget_id' });
+      } else {
+        await supabase
+          .from('user_widgets')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('widget_id', 'smart_alarm');
+      }
+    },
+    [user]
+  );
+
   const addAlarm = useCallback((alarmData: Omit<Alarm, 'id' | 'createdAt'>) => {
     const newAlarm: Alarm = {
       ...alarmData,
@@ -70,11 +118,12 @@ export const SmartProvider: React.FC<AlarmProviderProps> = ({ children }) => {
       )
     );
   }, []);
-  
+
   return (
     <AlarmContext.Provider value={{ 
       showSmartWidget, 
       setShowSmartWidget, 
+      loading,
       alarms, 
       addAlarm, 
       toggleAlarm, 
