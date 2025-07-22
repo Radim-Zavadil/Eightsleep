@@ -1,14 +1,16 @@
 import RecoverySection from '@/components/RecoverySection';
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
+import { supabase } from '@/utils/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 // Placeholder for RuleBlock component
 const RuleBlock = ({ rule, onToggle }: any) => (
   <View style={styles.ruleBlock}>
     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
       <View>
-        <Text style={styles.ruleName}>{rule.name}</Text>
+        <Text style={styles.ruleName}>{rule.rule_name}</Text>
         <Text style={styles.ruleGoal}>{rule.goal}</Text>
       </View>
       <TouchableOpacity
@@ -24,56 +26,108 @@ const RuleBlock = ({ rule, onToggle }: any) => (
 );
 
 const defaultRules = [
-  { name: 'Temperature', goal: '~21°C', checked: false },
-  { name: 'Darkness in the room', goal: 'No lights in your room', checked: false },
-  { name: 'Noise', goal: '0-30dB', checked: false },
-  { name: 'Sun exposure', goal: '20 minutes', checked: false },
-  { name: 'Exercise', goal: '20 minutes', checked: false },
-  { name: 'Blue light', goal: 'limit blue light 1-2h before bed', checked: false },
-  { name: 'Not eating large meals', goal: '2-3h avoid large meals (just snack if hungry)', checked: false },
-  { name: '240ml fluids in 2h before bed', goal: 'reduce fluids close to bedtime (240ml in 2h)', checked: false },
-  { name: 'No alcohol', goal: 'No alcohol', checked: false },
-  { name: 'No caffeine', goal: 'avoid 6+ hours before bed', checked: false },
+  { rule_name: 'Temperature', goal: '~21°C', checked: false },
+  { rule_name: 'Darkness in the room', goal: 'No lights in your room', checked: false },
+  { rule_name: 'Noise', goal: '0-30dB', checked: false },
+  { rule_name: 'Sun exposure', goal: '20 minutes', checked: false },
+  { rule_name: 'Exercise', goal: '20 minutes', checked: false },
+  { rule_name: 'Blue light', goal: 'limit blue light 1-2h before bed', checked: false },
+  { rule_name: 'Not eating large meals', goal: '2-3h avoid large meals (just snack if hungry)', checked: false },
+  { rule_name: '240ml fluids in 2h before bed', goal: 'reduce fluids close to bedtime (240ml in 2h)', checked: false },
+  { rule_name: 'No alcohol', goal: 'No alcohol', checked: false },
+  { rule_name: 'No caffeine', goal: 'avoid 6+ hours before bed', checked: false },
 ];
 
 export default function BedroomPage() {
-  const [rules, setRules] = useState(defaultRules);
+  const { user } = useAuth();
+  const [rules, setRules] = useState<any[]>([]);
   const [customRuleName, setCustomRuleName] = useState('');
   const [customRuleGoal, setCustomRuleGoal] = useState('');
   const [showCustomRuleForm, setShowCustomRuleForm] = useState(false);
   const { score, setScore } = useBedroomScore();
   const [toggleValue, setToggleValue] = useState('Yesterday');
+  const [loading, setLoading] = useState(true);
+
+  if (!user) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+        <ActivityIndicator color="#1EED67" size="large" />
+      </View>
+    );
+  }
+
+  // Fetch rules from Supabase on mount
+  useEffect(() => {
+    setLoading(true);
+    supabase
+      .from('bedroom_checklist_items')
+      .select('*')
+      .eq('user_id', user.id)
+      .then(async ({ data, error }) => {
+        if (error) {
+          setRules([]);
+          setLoading(false);
+          return;
+        }
+        if (!data || data.length === 0) {
+          // Insert default rules for this user
+          const toInsert = defaultRules.map(r => ({ ...r, user_id: user.id }));
+          const { data: inserted, error: insertError } = await supabase
+            .from('bedroom_checklist_items')
+            .insert(toInsert)
+            .select('*');
+          setRules(inserted || []);
+        } else {
+          setRules(data);
+        }
+        setLoading(false);
+      });
+  }, [user]);
 
   // Calculate score as percent of checked rules
   useEffect(() => {
+    if (rules.length === 0) return;
     const newScore = Math.round((rules.filter(r => r.checked).length / rules.length) * 100);
     setScore(newScore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rules]);
 
-  const toggleRule = (idx: number) => {
-    setRules(rules =>
-      rules.map((rule, i) =>
-        i === idx ? { ...rule, checked: !rule.checked } : rule
-      )
-    );
-  };
-
-  const addCustomRule = () => {
-    if (customRuleName && customRuleGoal) {
-      setRules([...rules, { name: customRuleName, goal: customRuleGoal, checked: false }]);
-      setCustomRuleName('');
-      setCustomRuleGoal('');
+  // Toggle rule checked state in DB
+  const toggleRule = useCallback(async (idx: number) => {
+    const rule = rules[idx];
+    const { data, error } = await supabase
+      .from('bedroom_checklist_items')
+      .update({ checked: !rule.checked })
+      .eq('id', rule.id)
+      .eq('user_id', user.id)
+      .select('*');
+    if (!error && data && data.length > 0) {
+      setRules(rules => rules.map((r, i) => (i === idx ? data[0] : r)));
     }
-  };
+  }, [rules, user]);
+
+  // Add custom rule to DB
+  const addCustomRule = useCallback(async () => {
+    if (customRuleName && customRuleGoal && user) {
+      const { data, error } = await supabase
+        .from('bedroom_checklist_items')
+        .insert({ rule_name: customRuleName, goal: customRuleGoal, checked: false, user_id: user.id })
+        .select('*');
+      if (!error && data && data.length > 0) {
+        setRules(rules => [...rules, data[0]]);
+        setCustomRuleName('');
+        setCustomRuleGoal('');
+      }
+    }
+  }, [customRuleName, customRuleGoal, user]);
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.recoverySectionWrapper}>
         <RecoverySection 
           score={score}
-          temperatureOk={rules.find(r => r.name === 'Temperature')?.checked}
-          darknessOk={rules.find(r => r.name === 'Darkness in the room')?.checked}
+          temperatureOk={rules.find(r => r.rule_name === 'Temperature')?.checked}
+          darknessOk={rules.find(r => r.rule_name === 'Darkness in the room')?.checked}
         />
       </View>
 
@@ -104,9 +158,13 @@ export default function BedroomPage() {
           <Text style={styles.plusButtonText}>＋</Text>
         </TouchableOpacity>
       </View>
-      {rules.map((rule, idx) => (
-        <RuleBlock key={idx} rule={rule} onToggle={() => toggleRule(idx)} />
-      ))}
+      {loading ? (
+        <ActivityIndicator color="#1EED67" size="large" style={{ marginTop: 32 }} />
+      ) : (
+        rules.map((rule, idx) => (
+          <RuleBlock key={rule.id || idx} rule={rule} onToggle={() => toggleRule(idx)} />
+        ))
+      )}
       {showCustomRuleForm && (
         <View style={styles.customRuleContainer}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -135,7 +193,7 @@ export default function BedroomPage() {
               placeholderTextColor="#888"
             />
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={() => { addCustomRule(); setShowCustomRuleForm(false); }}>
+          <TouchableOpacity style={styles.addButton} onPress={async () => { await addCustomRule(); setShowCustomRuleForm(false); }}>
             <Text style={styles.addButtonText}>Add Rule</Text>
           </TouchableOpacity>
         </View>

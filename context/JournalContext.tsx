@@ -83,13 +83,21 @@ export const JournalProvider = ({ children }: JournalProviderProps) => {
         date: formatDateYMD(new Date()),
         text_content,
       });
+    if (error) {
+      console.error('Error inserting journal entry:', error);
+      return;
+    }
     // Always refetch after insert to ensure consistency
     const { data, error: fetchError } = await supabase
       .from('journal_entries')
       .select('*')
       .eq('profile_id', user.id)
       .order('created_at', { ascending: false });
-    if (!fetchError && data) {
+    if (fetchError) {
+      console.error('Error fetching journal entries after insert:', fetchError);
+      return;
+    }
+    if (data) {
       setEntries(
         data.map((row: any) => {
           const lines = (row.text_content || '').split('\n');

@@ -79,16 +79,21 @@ CREATE TABLE journal_entries (
     FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
 );
 
--- Checklist Items Table (linked to profiles)
-CREATE TABLE checklist_items (
-    item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    profile_id UUID NOT NULL,
-    date DATE NOT NULL,
-    item_text TEXT NOT NULL,
-    is_completed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+-- Drop old table if it exists
+DROP TABLE IF EXISTS checlist_items;
+
+-- Create new table for bedroom checklist items
+CREATE TABLE IF NOT EXISTS bedroom_checklist_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users NOT NULL,
+  rule_name text NOT NULL,
+  goal text,
+  checked boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone DEFAULT timezone('utc', now())
 );
+
+-- Optional: index for faster user lookups
+CREATE INDEX IF NOT EXISTS idx_bedroom_checklist_user_id ON bedroom_checklist_items (user_id);
 
 -- Create indexes for better query performance
 CREATE INDEX idx_sleep_records_profile_id ON sleep_records(profile_id);
