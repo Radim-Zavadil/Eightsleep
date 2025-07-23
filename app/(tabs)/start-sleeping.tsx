@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useSmartContext } from '@/components/Context/AlarmContext';
 import AlarmCard from '@/components/AlarmCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/utils/supabase';
 
 const StartSleepingPage = () => {
   const router = useRouter();
@@ -29,9 +31,24 @@ const StartSleepingPage = () => {
   };
 
   // Handle wake up
-  const handleWakeUp = () => {
+  const handleWakeUp = async () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    // Pass sleep duration as seconds in query param
+    // Retrieve session_id
+    const session_id = await AsyncStorage.getItem('current_sleep_session_id');
+    if (!session_id) {
+      router.replace({ pathname: '/sleep', params: { slept: seconds.toString() } });
+      return;
+    }
+    const endTime = new Date();
+    const durationHours = seconds / 3600;
+    await supabase
+      .from('sleep_sessions')
+      .update({
+        end_time: endTime.toISOString(),
+        duration: durationHours,
+      })
+      .eq('session_id', session_id);
+    await AsyncStorage.removeItem('current_sleep_session_id');
     router.replace({ pathname: '/sleep', params: { slept: seconds.toString() } });
   };
 

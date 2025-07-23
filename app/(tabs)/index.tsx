@@ -24,6 +24,11 @@ import HalfCircleProgress from "@/components/HalfCircleProgress"; // Import the 
 import SleepDebtComponent from '../../components/SocialJetLegSection';
 import SmartAlarmCard from '@/components/SmartAlarm';
 
+import { supabase } from '@/utils/supabase';
+import { useAuth } from '../../src/utils/useAuth';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 //appearing
 import { useCaffeineContext } from '@/components/Context/CaffeineContext';
@@ -34,6 +39,7 @@ import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
 
 const HomePage: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuth();
   
   //Caffeine windows opening
   const { showCaffeineWidget } = useCaffeineContext();
@@ -41,6 +47,30 @@ const HomePage: React.FC = () => {
   const { showCircadianWidget } = useCircadianContext();
   const { showSmartWidget } = useSmartContext();
   const { score } = useBedroomScore();
+
+  // Add this function to handle sleep session logging
+  const handleStartSleeping = async () => {
+    if (!user) {
+      Alert.alert('Not logged in', 'You must be logged in to start a sleep session.');
+      return;
+    }
+    const now = new Date();
+    const { data, error } = await supabase
+      .from('sleep_sessions')
+      .insert({
+        profile_id: user.id,
+        start_time: now.toISOString(),
+      })
+      .select('session_id')
+      .single();
+    if (error || !data) {
+      Alert.alert('Error', error?.message || 'Failed to start sleep session.');
+      return;
+    }
+    // Save session_id for later update
+    await AsyncStorage.setItem('current_sleep_session_id', data.session_id);
+    router.push('./start-sleeping');
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -115,7 +145,7 @@ const HomePage: React.FC = () => {
             <TouchableOpacity 
               style={styles.quickStartButton}
               onPress={() => {
-                router.push('./start-sleeping');
+                handleStartSleeping();
               }}
             >
               <ThemedText style={styles.quickStartButtonText}>Start sleeping</ThemedText>
