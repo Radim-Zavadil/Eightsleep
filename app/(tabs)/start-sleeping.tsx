@@ -35,21 +35,8 @@ const StartSleepingPage = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     // Retrieve session_id
     const session_id = await AsyncStorage.getItem('current_sleep_session_id');
-    if (!session_id) {
-      router.replace({ pathname: '/sleep', params: { slept: seconds.toString() } });
-      return;
-    }
-    const endTime = new Date();
-    const durationHours = seconds / 3600;
-    await supabase
-      .from('sleep_sessions')
-      .update({
-        end_time: endTime.toISOString(),
-        duration: durationHours,
-      })
-      .eq('session_id', session_id);
-    await AsyncStorage.removeItem('current_sleep_session_id');
-    router.replace({ pathname: '/sleep', params: { slept: seconds.toString() } });
+    // Do not update end_time or duration yet, just pass seconds to next page
+    router.replace({ pathname: '/fall-asleep', params: { slept: seconds.toString() } });
   };
 
   return (
