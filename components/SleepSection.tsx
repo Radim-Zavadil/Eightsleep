@@ -11,7 +11,7 @@ import ActivityGauge from './SleepArc';
 
 import { ChevronRight } from 'react-native-feather';
 
-export default function SleepSection() {
+export default function SleepSection({ sleepLength = 'N/A' }: { sleepLength?: string }) {
   return (
     <Link href='/sleep' asChild>
       <View style={{
@@ -112,7 +112,7 @@ export default function SleepSection() {
             <Text style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, fontFamily: "Inter", fontWeight: "300", textTransform: "uppercase", letterSpacing: 1.2}}>Sleep length</Text>
 
             <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-              <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>7 h 11 m</Text>
+              <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>{sleepLength}</Text>
               {/* Optional SVG Icon */}
               <Svg height="16" width="16" style={{ margin: 5 }}>
                 <svg width="18" height="19" viewBox="0 0 21 22" fill="none" xmlns="http://www.w3.org/2000/svg">

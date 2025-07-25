@@ -25,11 +25,26 @@ const FallAsleepPage = () => {
     // Save to DB
     const session_id = await AsyncStorage.getItem('current_sleep_session_id');
     if (session_id) {
+      // Fetch the session to get start_time
+      const { data: sessionData, error: sessionError } = await supabase
+        .from('sleep_sessions')
+        .select('start_time')
+        .eq('session_id', session_id)
+        .single();
+      let updates = { fall_asleep_minutes: selected };
+      if (sessionData && sessionData.start_time) {
+        const endTime = new Date();
+        const startTime = new Date(sessionData.start_time);
+        const durationHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+        updates = {
+          ...updates,
+          end_time: endTime.toISOString(),
+          duration: parseFloat(durationHours.toFixed(2)),
+        };
+      }
       await supabase
         .from('sleep_sessions')
-        .update({
-          fall_asleep_minutes: selected,
-        })
+        .update(updates)
         .eq('session_id', session_id);
     }
     // Remove session_id from storage (session is over)

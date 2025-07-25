@@ -5,6 +5,8 @@ import * as Font from 'expo-font';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
+import { supabase } from '../utils/supabase';
+import { useAuth } from '../src/utils/useAuth';
 
 type SleepStat = {
   value: string;
@@ -116,9 +118,9 @@ const ContributorItem: React.FC<Contributor> = ({ name, status, progress }) => {
 
 const SleepScreen = () => {
   const [fontsLoaded, setFontsLoaded] = React.useState(false);
-  const params = useLocalSearchParams();
-  const sleptSeconds = params.slept ? parseInt(params.slept as string, 10) : undefined;
-  const sleepData = getSleepData(sleptSeconds);
+  const [sleepSession, setSleepSession] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const { user } = useAuth();
 
   React.useEffect(() => {
     async function loadFonts() {
@@ -131,13 +133,110 @@ const SleepScreen = () => {
     loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
+  React.useEffect(() => {
+    async function fetchSleepSession() {
+      if (!user) return;
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('sleep_sessions')
+        .select('*')
+        .eq('profile_id', user.id)
+        .not('end_time', 'is', null)
+        .order('end_time', { ascending: false })
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        setSleepSession(data[0]);
+      }
+      setLoading(false);
+    }
+    fetchSleepSession();
+  }, [user]);
+
+  if (!fontsLoaded || loading) {
     return (
         <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
             <Text style={{color: 'white'}}>Loading...</Text>
         </View>
     );
   }
+
+  // Calculate sleep stats from sleepSession
+  let totalSleep = 'Nothing';
+  let timeInBed = 'Nothing';
+  let fallAsleepMinutes = 0;
+  let duration = null;
+  if (sleepSession) {
+    duration = sleepSession.duration;
+    if (!duration && sleepSession.start_time && sleepSession.end_time) {
+      const start = new Date(sleepSession.start_time);
+      const end = new Date(sleepSession.end_time);
+      duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    }
+    if (duration) {
+      const hours = Math.floor(duration);
+      const minutes = Math.round((duration - hours) * 60);
+      totalSleep = `${hours}h ${minutes}m`;
+    }
+    fallAsleepMinutes = sleepSession.fall_asleep_minutes || 0;
+    if (duration !== null) {
+      // Time in bed = duration + fall asleep minutes (converted to hours)
+      const timeInBedHours = duration + (fallAsleepMinutes / 60);
+      const tHours = Math.floor(timeInBedHours);
+      const tMinutes = Math.round((timeInBedHours - tHours) * 60);
+      timeInBed = `${tHours}h ${tMinutes}m`;
+    }
+  }
+
+  // Interactive contributors based on duration
+  let contributors: Contributor[] = [];
+  if (duration !== null) {
+    contributors = [
+      {
+        name: 'Sleep Efficiency',
+        status: duration >= 7 ? 'Optimal' : 'Needs Attention',
+        progress: Math.min(duration / 8, 1),
+      },
+      {
+        name: 'Restfulness',
+        status: duration >= 7 ? 'Optimal' : 'Needs Attention',
+        progress: Math.min(duration / 8, 1),
+      },
+      {
+        name: 'Total Sleep',
+        status: duration >= 7 ? 'Optimal' : 'Needs Attention',
+        progress: Math.min(duration / 8, 1),
+      },
+      {
+        name: 'Timing',
+        status: duration >= 6 ? 'Optimal' : 'Needs Attention',
+        progress: Math.min(duration / 8, 1),
+      },
+      {
+        name: 'Restoration Time',
+        status: duration >= 7 ? 'Optimal' : 'Needs Attention',
+        progress: Math.min(duration / 8, 1),
+      },
+    ];
+  } else {
+    contributors = [
+      { name: 'Sleep Efficiency', status: 'Needs Attention', progress: 0 },
+      { name: 'Restfulness', status: 'Needs Attention', progress: 0 },
+      { name: 'Total Sleep', status: 'Needs Attention', progress: 0 },
+      { name: 'Timing', status: 'Needs Attention', progress: 0 },
+      { name: 'Restoration Time', status: 'Needs Attention', progress: 0 },
+    ];
+  }
+
+  const sleepData = {
+    date: 'Today',
+    stats: [
+      { value: totalSleep, label: 'TOTAL SLEEP', status: (duration && duration >= 7 ? 'Optimal' : 'Needs Attention') as 'Optimal' | 'Needs Attention' },
+      { value: timeInBed, label: 'TIME IN BED', status: (duration && duration >= 7 ? 'Optimal' : 'Needs Attention') as 'Optimal' | 'Needs Attention' },
+      { value: duration !== null ? `${Math.round((duration / (duration + (fallAsleepMinutes / 60))) * 100)}%` : 'Nothing', label: 'RESTORATIVE SLEEP', status: (duration && duration >= 7 ? 'Optimal' : 'Needs Attention') as 'Optimal' | 'Needs Attention' },
+      { value: 'Nothing', label: 'HR DROP', status: 'Needs Attention' as 'Needs Attention' },
+    ],
+    contributors,
+  };
 
   return (
     <SafeAreaView style={styles.container}>

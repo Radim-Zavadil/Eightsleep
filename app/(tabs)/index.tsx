@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions, TouchableOpacity } from "react-native";
 import { Link, useRouter } from "expo-router";
@@ -47,6 +47,35 @@ const HomePage: React.FC = () => {
   const { showCircadianWidget } = useCircadianContext();
   const { showSmartWidget } = useSmartContext();
   const { score } = useBedroomScore();
+
+  const [sleepLength, setSleepLength] = useState<string>('N/A');
+
+  useEffect(() => {
+    async function fetchSleepSession() {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('sleep_sessions')
+        .select('*')
+        .eq('profile_id', user.id)
+        .not('end_time', 'is', null)
+        .order('end_time', { ascending: false })
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        let duration = data[0].duration;
+        if (!duration && data[0].start_time && data[0].end_time) {
+          const start = new Date(data[0].start_time);
+          const end = new Date(data[0].end_time);
+          duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        }
+        if (duration) {
+          const hours = Math.floor(duration);
+          const minutes = Math.round((duration - hours) * 60);
+          setSleepLength(`${hours} h ${minutes} m`);
+        }
+      }
+    }
+    fetchSleepSession();
+  }, [user]);
 
   // Add this function to handle sleep session logging
   const handleStartSleeping = async () => {
@@ -107,7 +136,7 @@ const HomePage: React.FC = () => {
       <ScrollView style={styles.sectionsContainer}>
 
         {/**SLEEP SECTION */}
-        <SleepSection />
+        <SleepSection sleepLength={sleepLength} />
 
         {/*SLEEP DEBT */}
         <SleepDebtComponent />
