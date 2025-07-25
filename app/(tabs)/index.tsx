@@ -36,6 +36,8 @@ import { useScreenContext } from '@/components/Context/ScreenContext';
 import { useCircadianContext } from '@/components/Context/CircadianContext';
 import { useSmartContext } from '@/components/Context/AlarmContext';
 import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
+import { useJournalContext } from '@/context/JournalContext';
+import { calculateSleepScore } from '../../src/utils/calculateSleepScore';
 
 const HomePage: React.FC = () => {
   const router = useRouter();
@@ -46,7 +48,8 @@ const HomePage: React.FC = () => {
   const { showScreenWidget } = useScreenContext();
   const { showCircadianWidget } = useCircadianContext();
   const { showSmartWidget } = useSmartContext();
-  const { score } = useBedroomScore();
+  const { score: bedroomScore } = useBedroomScore();
+  const { entries, getDailyEntryCounts } = useJournalContext();
 
   const [sleepLength, setSleepLength] = useState<string>('N/A');
 
@@ -101,6 +104,36 @@ const HomePage: React.FC = () => {
     router.push('./start-sleeping');
   };
 
+  // Calculate sleep duration in hours from sleepLength string
+  function parseSleepLengthToHours(sleepLength: string): number {
+    if (!sleepLength || sleepLength === 'N/A') return 0;
+    const match = sleepLength.match(/(\d+)\s*h\s*(\d+)?/);
+    if (!match) return 0;
+    const hours = parseInt(match[1], 10);
+    const minutes = match[2] ? parseInt(match[2], 10) : 0;
+    return hours + minutes / 60;
+  }
+
+  // Get journal entries in the last 7 days
+  function getJournalEntriesLast7Days(): number {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 6); // include today
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= sevenDaysAgo && entryDate <= now;
+    }).length;
+  }
+
+  const sleepDurationHours = parseSleepLengthToHours(sleepLength);
+  const journalEntriesLast7Days = getJournalEntriesLast7Days();
+  const sleepScore = calculateSleepScore({
+    sleepDurationHours,
+    bedroomScore,
+    journalEntries: journalEntriesLast7Days,
+    periodDays: 7
+  });
+
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
@@ -136,7 +169,7 @@ const HomePage: React.FC = () => {
       <ScrollView style={styles.sectionsContainer}>
 
         {/**SLEEP SECTION */}
-        <SleepSection sleepLength={sleepLength} />
+        <SleepSection sleepLength={sleepLength} score={sleepScore} />
 
         {/*SLEEP DEBT */}
         <SleepDebtComponent />
@@ -147,7 +180,7 @@ const HomePage: React.FC = () => {
         
         
         {/**RECOVERY SECTION */}
-        <RecoverySection score={score} />
+        <RecoverySection score={bedroomScore} />
 
         
         <NsdrComponent />

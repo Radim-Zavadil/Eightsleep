@@ -11,7 +11,7 @@ import ActivityGauge from './SleepArc';
 
 import { ChevronRight } from 'react-native-feather';
 
-export default function SleepSection({ sleepLength = 'N/A' }: { sleepLength?: string }) {
+export default function SleepSection({ sleepLength = 'N/A', score = 0 }: { sleepLength?: string, score?: number }) {
   return (
     <Link href='/sleep' asChild>
       <View style={{
@@ -71,7 +71,7 @@ export default function SleepSection({ sleepLength = 'N/A' }: { sleepLength?: st
             <ChevronRight width={24} height={24} color="#8E8E93" />
           </View>
 
-          <RectangleGauge value={50} />
+          <RectangleGauge value={score} />
 
           {/* Trophy Label */}
           <View style={{
