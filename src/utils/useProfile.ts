@@ -19,6 +19,9 @@ export function useProfile(user: { id: string } | null) {
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
+        if (data && !data.dob && data.date_of_birth) {
+          data.dob = data.date_of_birth;
+        }
         setProfile(data as Profile);
         setProfileLoading(false);
       });
