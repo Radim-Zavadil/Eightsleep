@@ -4,6 +4,20 @@ import Svg, { Rect, Text } from 'react-native-svg';
 
 import { Shadow } from 'react-native-shadow-2';
 
+// Add prop type for scoreColor
+interface RectangleGaugeProps {
+  value?: number;
+  maxValue?: number;
+  width?: number;
+  height?: number;
+  barHeight?: number;
+  barRadius?: number;
+  backgroundColor?: string;
+  fillColor?: string;
+  animationDuration?: number;
+  scoreColor?: string;
+}
+
 const RectangleGauge = ({
   value = 0,
   maxValue = 100,
@@ -14,7 +28,8 @@ const RectangleGauge = ({
   backgroundColor = 'rgba(255,255,255,0.3)',
   fillColor = '#00FF64',
   animationDuration = 800,
-}) => {
+  scoreColor = '#00FF64',
+}: RectangleGaugeProps) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [displayValue, setDisplayValue] = useState(0);
 
@@ -44,7 +59,7 @@ const RectangleGauge = ({
           fontSize={50}
           fontWeight="400"
           fontFamily="Inter"
-          fill="#00FF64"
+          fill={scoreColor}
         >
           {Math.round(value)}
         </Text>

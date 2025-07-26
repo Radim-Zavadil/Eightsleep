@@ -11,7 +11,33 @@ import ActivityGauge from './SleepArc';
 
 import { ChevronRight } from 'react-native-feather';
 
+const getSleepScoreColors = (score) => {
+  if (score < 30) {
+    return {
+      scoreColor: '#E2706E',
+      fillColor: '#E2706E',
+      tintColor: '#4B1A16',
+      image: require('../assets/images/sleepGreenBlur.png'),
+    };
+  } else if (score < 70) {
+    return {
+      scoreColor: '#F4BA64',
+      fillColor: '#F4BA64',
+      tintColor: '#6B4312',
+      image: require('../assets/images/sleepGreenBlur.png'),
+    };
+  } else {
+    return {
+      scoreColor: '#00FF64', // current green
+      fillColor: '#00FF64',
+      tintColor: undefined,
+      image: require('../assets/images/sleepGreenBlur.png'),
+    };
+  }
+};
+
 export default function SleepSection({ sleepLength = 'N/A', score = 0 }: { sleepLength?: string, score?: number }) {
+  const { scoreColor, fillColor, tintColor, image } = getSleepScoreColors(score);
   return (
     <Link href='/sleep' asChild>
       <View style={{
@@ -25,18 +51,17 @@ export default function SleepSection({ sleepLength = 'N/A', score = 0 }: { sleep
           marginTop: 5,
           paddingVertical: 5
         }}>
-          {/* Two PNG background images */}
-          
+          {/* Background image with tint */}
           <Image
-            source={require('../assets/images/sleepGreenBlur.png')}
+            source={image}
             style={{
               position: 'absolute',
               width: '100%',
               height: '100%',
               resizeMode: 'cover',
+              ...(tintColor ? { tintColor: tintColor, opacity: 0.7 } : {}),
             }}
           />
-
           {/* Sleep Score and Arrow Container */}
           <View style={{
             flexDirection: 'row',
@@ -57,7 +82,7 @@ export default function SleepSection({ sleepLength = 'N/A', score = 0 }: { sleep
             >
               <Text 
                 style={{
-                  color: '#FFFFFF',
+                  color: "#FFFFFF",
                   fontSize: 10,
                   letterSpacing: 1,
                   fontWeight: '500',
@@ -71,7 +96,7 @@ export default function SleepSection({ sleepLength = 'N/A', score = 0 }: { sleep
             <ChevronRight width={24} height={24} color="#8E8E93" />
           </View>
 
-          <RectangleGauge value={score} />
+          <RectangleGauge value={score} fillColor={fillColor} scoreColor={scoreColor} />
 
           {/* Trophy Label */}
           <View style={{
