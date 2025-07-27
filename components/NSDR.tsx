@@ -2,7 +2,13 @@ import React from 'react';
 import { TouchableOpacity, Text, View, ImageBackground } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-const NsdrComponent = ({ onPress }) => {
+const NsdrComponent = ({ onPress, score = 0 }) => {
+  let tintColor = undefined;
+  if (score < 30) {
+    tintColor = '#4B1A16';
+  } else if (score < 70) {
+    tintColor = '#6B4312';
+  }
   return (
     <TouchableOpacity 
       style={{
@@ -15,6 +21,8 @@ const NsdrComponent = ({ onPress }) => {
       }} 
       onPress={onPress}
       activeOpacity={0.8}
+      // If onPress is not provided, disable the button
+      disabled={!onPress}
     >
       <ImageBackground
         source={require('../assets/images/GreenWhiteBlur.png')} // Replace with your background image path
@@ -25,6 +33,7 @@ const NsdrComponent = ({ onPress }) => {
         }}
         imageStyle={{
           borderRadius: 12,
+          ...(tintColor ? { tintColor: tintColor, opacity: 0.7 } : {}),
         }}
       >
         <View style={{

@@ -183,7 +183,7 @@ const HomePage: React.FC = () => {
         <RecoverySection score={bedroomScore} />
 
         
-        <NsdrComponent />
+        <NsdrComponent score={sleepScore} />
       
         {/**JOURNAL */}
         <JournalSection />
