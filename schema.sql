@@ -79,6 +79,22 @@ CREATE TABLE journal_entries (
     FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
 );
 
+-- Enable Row Level Security for journal_entries
+ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for journal_entries
+CREATE POLICY "Users can view own journal entries" ON journal_entries
+  FOR SELECT USING (auth.uid() = profile_id);
+
+CREATE POLICY "Users can insert own journal entries" ON journal_entries
+  FOR INSERT WITH CHECK (auth.uid() = profile_id);
+
+CREATE POLICY "Users can update own journal entries" ON journal_entries
+  FOR UPDATE USING (auth.uid() = profile_id);
+
+CREATE POLICY "Users can delete own journal entries" ON journal_entries
+  FOR DELETE USING (auth.uid() = profile_id);
+
 -- Drop old table if it exists
 DROP TABLE IF EXISTS checlist_items;
 

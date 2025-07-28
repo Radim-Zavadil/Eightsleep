@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, FlatList, StyleSheet, Modal, TextInput, P
 import { Plus, X, Send, Pencil, Trash, ChevronLeft } from 'lucide-react-native';
 import { JournalProvider, useJournalContext } from '@/context/JournalContext';
 import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/utils/supabase';
 
 function JournalModal({ visible, onClose, onSave, initialTitle = '', initialContent = '', isEditing = false, onDelete }: {
   visible: boolean;
@@ -83,37 +85,59 @@ function JournalModal({ visible, onClose, onSave, initialTitle = '', initialCont
 
 function JournalContent() {
   const { entries, addEntry, updateEntry, deleteEntry } = useJournalContext();
+  const { user } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingEntry, setEditingEntry] = useState<null | { id: string; title: string; content: string }>(null);
   const router = useRouter();
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('JournalContent: User:', user?.id);
+    console.log('JournalContent: Entries count:', entries.length);
+  }, [user, entries]);
+
   // Open modal for new entry
   const openNewEntry = () => {
+    console.log('Opening new entry modal');
     setEditingEntry(null);
     setModalVisible(true);
   };
 
   // Open modal for editing
   const openEditEntry = (entry: { id: string; title: string; content: string }) => {
+    console.log('Opening edit entry modal for:', entry.id);
     setEditingEntry(entry);
     setModalVisible(true);
   };
 
   // Save new or edited entry
   const handleSave = async (title: string, content: string) => {
-    if (editingEntry) {
-      await updateEntry(editingEntry.id, { title, content });
-    } else {
-      await addEntry({ title, content });
+    console.log('Saving entry:', { title, content, editingEntry });
+    try {
+      if (editingEntry) {
+        await updateEntry(editingEntry.id, { title, content });
+        console.log('Entry updated successfully');
+      } else {
+        await addEntry({ title, content });
+        console.log('Entry added successfully');
+      }
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Error saving entry:', error);
     }
-    setModalVisible(false);
   };
 
   // Delete entry
   const handleDelete = async () => {
     if (editingEntry) {
-      await deleteEntry(editingEntry.id);
-      setModalVisible(false);
+      console.log('Deleting entry:', editingEntry.id);
+      try {
+        await deleteEntry(editingEntry.id);
+        console.log('Entry deleted successfully');
+        setModalVisible(false);
+      } catch (error) {
+        console.error('Error deleting entry:', error);
+      }
     }
   };
 
@@ -143,6 +167,28 @@ function JournalContent() {
       >
         <ChevronLeft size={28} color="#fff" />
       </TouchableOpacity>
+      
+      {/* Debug Info */}
+      <View style={{ padding: 10, backgroundColor: '#333', marginBottom: 10, borderRadius: 8 }}>
+        <Text style={{ color: '#fff', fontSize: 12 }}>
+          User ID: {user?.id || 'No user'}
+        </Text>
+        <Text style={{ color: '#fff', fontSize: 12 }}>
+          Entries: {entries.length}
+        </Text>
+        <TouchableOpacity 
+          style={{ backgroundColor: '#007AFF', padding: 8, borderRadius: 4, marginTop: 5 }}
+          onPress={() => {
+            console.log('Testing Supabase connection...');
+            supabase.from('journal_entries').select('count').then(({ data, error }: { data: any; error: any }) => {
+              console.log('Test result:', { data, error });
+            });
+          }}
+        >
+          <Text style={{ color: '#fff', textAlign: 'center' }}>Test DB Connection</Text>
+        </TouchableOpacity>
+      </View>
+      
       <Text style={styles.todayDate}>
         {(() => {
           const d = new Date();
