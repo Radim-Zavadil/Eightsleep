@@ -52,17 +52,50 @@ const HomePage: React.FC = () => {
   const { entries, getDailyEntryCounts } = useJournalContext();
 
   const [sleepLength, setSleepLength] = useState<string>('N/A');
+  const [selectedDate, setSelectedDate] = useState<'today' | 'yesterday'>('today');
+
+  // Get today's date for the circle button
+  const getTodayDate = () => {
+    return new Date().getDate();
+  };
+
+  // Get the target date based on selection
+  const getTargetDate = () => {
+    const today = new Date();
+    if (selectedDate === 'yesterday') {
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      return yesterday;
+    }
+    return today;
+  };
+
+  // Get date range for the selected period
+  const getDateRange = () => {
+    const targetDate = getTargetDate();
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    return { startOfDay, endOfDay };
+  };
 
   useEffect(() => {
     async function fetchSleepSession() {
       if (!user) return;
+      
+      const { startOfDay, endOfDay } = getDateRange();
+      
       const { data, error } = await supabase
         .from('sleep_sessions')
         .select('*')
         .eq('profile_id', user.id)
         .not('end_time', 'is', null)
+        .gte('end_time', startOfDay.toISOString())
+        .lte('end_time', endOfDay.toISOString())
         .order('end_time', { ascending: false })
         .limit(1);
+        
       if (!error && data && data.length > 0) {
         let duration = data[0].duration;
         if (!duration && data[0].start_time && data[0].end_time) {
@@ -75,10 +108,12 @@ const HomePage: React.FC = () => {
           const minutes = Math.round((duration - hours) * 60);
           setSleepLength(`${hours} h ${minutes} m`);
         }
+      } else {
+        setSleepLength('N/A');
       }
     }
     fetchSleepSession();
-  }, [user]);
+  }, [user, selectedDate]);
 
   // Add this function to handle sleep session logging
   const handleStartSleeping = async () => {
@@ -114,36 +149,60 @@ const HomePage: React.FC = () => {
     return hours + minutes / 60;
   }
 
-  // Get journal entries in the last 7 days
-  function getJournalEntriesLast7Days(): number {
-    const now = new Date();
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(now.getDate() - 6); // include today
+  // Get journal entries for the selected date
+  function getJournalEntriesForSelectedDate(): number {
+    const { startOfDay, endOfDay } = getDateRange();
     return entries.filter(entry => {
       const entryDate = new Date(entry.date);
-      return entryDate >= sevenDaysAgo && entryDate <= now;
+      return entryDate >= startOfDay && entryDate <= endOfDay;
     }).length;
   }
 
   const sleepDurationHours = parseSleepLengthToHours(sleepLength);
-  const journalEntriesLast7Days = getJournalEntriesLast7Days();
+  const journalEntriesForSelectedDate = getJournalEntriesForSelectedDate();
   const sleepScore = calculateSleepScore({
     sleepDurationHours,
     bedroomScore,
-    journalEntries: journalEntriesLast7Days,
-    periodDays: 7
+    journalEntries: journalEntriesForSelectedDate,
+    periodDays: 1 // Changed to 1 since we're looking at a specific date
   });
 
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <ThemedText style={styles.yesterdayText}>YESTERDAY</ThemedText>
+        <TouchableOpacity 
+          onPress={() => setSelectedDate('yesterday')}
+          style={styles.dateButton}
+        >
+          <ThemedText style={[
+            styles.yesterdayText,
+            selectedDate === 'yesterday' && styles.activeDateText
+          ]}>
+            YESTERDAY
+          </ThemedText>
+        </TouchableOpacity>
         
         <View style={styles.centerContent}>
-          <ThemedText style={styles.todayText}>TODAY</ThemedText>
+          <TouchableOpacity 
+            onPress={() => setSelectedDate('today')}
+            style={styles.dateButton}
+          >
+            <ThemedText style={[
+              styles.todayText,
+              selectedDate === 'today' && styles.activeDateText
+            ]}>
+              TODAY
+            </ThemedText>
+          </TouchableOpacity>
           <svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#filter0_i_697_13817)">
-          <path d="M1 1L6.68966 7L12 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path 
+            d="M1 1L6.68966 7L12 1" 
+            stroke={selectedDate === 'today' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)'} 
+            stroke-width="2" 
+            stroke-linecap="round" 
+            stroke-linejoin="round"
+          />
           </g>
           <defs>
           <filter id="filter0_i_697_13817" x="0" y="0" width="13" height="8" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
@@ -161,7 +220,7 @@ const HomePage: React.FC = () => {
         </View>
         <Link href="/calendar" style={styles.circleContainer}>
           <View style={styles.circle}>
-            <ThemedText style={styles.circleText}>3</ThemedText>
+            <ThemedText style={styles.circleText}>{getTodayDate()}</ThemedText>
           </View>
         </Link>
       </View>
@@ -183,7 +242,7 @@ const HomePage: React.FC = () => {
         <RecoverySection score={bedroomScore} />
 
         
-        <NsdrComponent score={sleepScore} />
+        <NsdrComponent score={sleepScore} onPress={() => {}} />
       
         {/**JOURNAL */}
         <JournalSection />
@@ -229,43 +288,34 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingRight: 42,
+    paddingLeft: 10,
     paddingBottom: 20,
   },
   yesterdayText: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#FFFFFF",
-    textShadowColor: "rgba(255, 255, 255, 1)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
-    transform: [{ translateX: -40 }],
-    position: "absolute",
-    left: 20,
+    color: "rgba(255, 255, 255, 0.5)",
   },
   centerContent: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    flex: 1,
     justifyContent: "center",
   },
   todayText: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#FFFFFF",
-    textShadowColor: "rgba(255, 255, 255, 1)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    color: "rgba(255, 255, 255, 0.5)",
   },
   arrowIcon: {
     width: 12,
     height: 12,
   },
   circleContainer: {
-    position: "absolute",
-    right: 20,
+    // Removed absolute positioning to keep it in the flex row
   },
   circle: {
     width: 28,
@@ -661,6 +711,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '500',
     fontSize: 16,
+  },
+  dateButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  activeDateText: {
+    color: '#fff',
+    fontWeight: '600',
+    textShadowColor: "rgba(255, 255, 255, 1)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+    opacity: 1,
   },
 });
 
