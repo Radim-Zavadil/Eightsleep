@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { StyleSheet, View, Image, ScrollView, Text, ImageBackground, Dimensions, TouchableOpacity } from "react-native";
 import { Link, useRouter } from "expo-router";
@@ -24,6 +24,11 @@ import HalfCircleProgress from "@/components/HalfCircleProgress"; // Import the 
 import SleepDebtComponent from '../../components/SocialJetLegSection';
 import SmartAlarmCard from '@/components/SmartAlarm';
 
+import { supabase } from '@/utils/supabase';
+import { useAuth } from '../../src/utils/useAuth';
+import { Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 //appearing
 import { useCaffeineContext } from '@/components/Context/CaffeineContext';
@@ -31,16 +36,103 @@ import { useScreenContext } from '@/components/Context/ScreenContext';
 import { useCircadianContext } from '@/components/Context/CircadianContext';
 import { useSmartContext } from '@/components/Context/AlarmContext';
 import { useBedroomScore } from '@/components/Context/BedroomScoreContext';
+import { useJournalContext } from '@/context/JournalContext';
+import { calculateSleepScore } from '../../src/utils/calculateSleepScore';
 
 const HomePage: React.FC = () => {
   const router = useRouter();
+  const { user } = useAuth();
   
   //Caffeine windows opening
   const { showCaffeineWidget } = useCaffeineContext();
   const { showScreenWidget } = useScreenContext();
   const { showCircadianWidget } = useCircadianContext();
   const { showSmartWidget } = useSmartContext();
-  const { score } = useBedroomScore();
+  const { score: bedroomScore } = useBedroomScore();
+  const { entries, getDailyEntryCounts } = useJournalContext();
+
+  const [sleepLength, setSleepLength] = useState<string>('N/A');
+
+  useEffect(() => {
+    async function fetchSleepSession() {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('sleep_sessions')
+        .select('*')
+        .eq('profile_id', user.id)
+        .not('end_time', 'is', null)
+        .order('end_time', { ascending: false })
+        .limit(1);
+      if (!error && data && data.length > 0) {
+        let duration = data[0].duration;
+        if (!duration && data[0].start_time && data[0].end_time) {
+          const start = new Date(data[0].start_time);
+          const end = new Date(data[0].end_time);
+          duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+        }
+        if (duration) {
+          const hours = Math.floor(duration);
+          const minutes = Math.round((duration - hours) * 60);
+          setSleepLength(`${hours} h ${minutes} m`);
+        }
+      }
+    }
+    fetchSleepSession();
+  }, [user]);
+
+  // Add this function to handle sleep session logging
+  const handleStartSleeping = async () => {
+    if (!user) {
+      Alert.alert('Not logged in', 'You must be logged in to start a sleep session.');
+      return;
+    }
+    const now = new Date();
+    const { data, error } = await supabase
+      .from('sleep_sessions')
+      .insert({
+        profile_id: user.id,
+        start_time: now.toISOString(),
+      })
+      .select('session_id')
+      .single();
+    if (error || !data) {
+      Alert.alert('Error', error?.message || 'Failed to start sleep session.');
+      return;
+    }
+    // Save session_id for later update
+    await AsyncStorage.setItem('current_sleep_session_id', data.session_id);
+    router.push('./start-sleeping');
+  };
+
+  // Calculate sleep duration in hours from sleepLength string
+  function parseSleepLengthToHours(sleepLength: string): number {
+    if (!sleepLength || sleepLength === 'N/A') return 0;
+    const match = sleepLength.match(/(\d+)\s*h\s*(\d+)?/);
+    if (!match) return 0;
+    const hours = parseInt(match[1], 10);
+    const minutes = match[2] ? parseInt(match[2], 10) : 0;
+    return hours + minutes / 60;
+  }
+
+  // Get journal entries in the last 7 days
+  function getJournalEntriesLast7Days(): number {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 6); // include today
+    return entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= sevenDaysAgo && entryDate <= now;
+    }).length;
+  }
+
+  const sleepDurationHours = parseSleepLengthToHours(sleepLength);
+  const journalEntriesLast7Days = getJournalEntriesLast7Days();
+  const sleepScore = calculateSleepScore({
+    sleepDurationHours,
+    bedroomScore,
+    journalEntries: journalEntriesLast7Days,
+    periodDays: 7
+  });
 
   return (
     <ThemedView style={styles.container}>
@@ -77,7 +169,7 @@ const HomePage: React.FC = () => {
       <ScrollView style={styles.sectionsContainer}>
 
         {/**SLEEP SECTION */}
-        <SleepSection />
+        <SleepSection sleepLength={sleepLength} score={sleepScore} />
 
         {/*SLEEP DEBT */}
         <SleepDebtComponent />
@@ -88,10 +180,10 @@ const HomePage: React.FC = () => {
         
         
         {/**RECOVERY SECTION */}
-        <RecoverySection score={score} />
+        <RecoverySection score={bedroomScore} />
 
         
-        <NsdrComponent />
+        <NsdrComponent score={sleepScore} />
       
         {/**JOURNAL */}
         <JournalSection />
@@ -115,7 +207,7 @@ const HomePage: React.FC = () => {
             <TouchableOpacity 
               style={styles.quickStartButton}
               onPress={() => {
-                router.push('./start-sleeping');
+                handleStartSleeping();
               }}
             >
               <ThemedText style={styles.quickStartButtonText}>Start sleeping</ThemedText>

@@ -3,6 +3,7 @@ export interface Profile {
   email: string;
   phone?: string;
   dob?: string;
+  date_of_birth?: string;
   cycle_length?: number;
   cycle_regularity?: string;
   goal?: string;

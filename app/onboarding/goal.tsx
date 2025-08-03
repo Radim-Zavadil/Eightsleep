@@ -57,20 +57,20 @@ export default function OnboardingGoalScreen() {
         {error ? <Text style={styles.error}>{error}</Text> : null}
         
         <ContinueButton 
-          onPress={() => handleContinue('track_cycles')}
-          label="Track my cycles"
+          onPress={() => handleContinue('fix_sleeping_patterns')}
+          label="Fix my sleeping patterns"
           disabled={isLoading}
         />
         
         <ContinueButton 
-          onPress={() => handleContinue('track_pregnancy')}
-          label="Track my pregnancy"
+          onPress={() => handleContinue('track_sleeping')}
+          label="Track my sleeping"
           disabled={isLoading}
         />
         
         <ContinueButton 
-          onPress={() => handleContinue('get_pregnant')}
-          label="Get pregnant"
+          onPress={() => handleContinue('gamify_sleeping')}
+          label="Gamify the sleeping"
           disabled={isLoading}
         />
         

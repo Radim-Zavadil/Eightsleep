@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useSmartContext } from '@/components/Context/AlarmContext';
 import AlarmCard from '@/components/AlarmCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/utils/supabase';
 
 const StartSleepingPage = () => {
   const router = useRouter();
@@ -29,10 +31,12 @@ const StartSleepingPage = () => {
   };
 
   // Handle wake up
-  const handleWakeUp = () => {
+  const handleWakeUp = async () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    // Pass sleep duration as seconds in query param
-    router.replace({ pathname: '/sleep', params: { slept: seconds.toString() } });
+    // Retrieve session_id
+    const session_id = await AsyncStorage.getItem('current_sleep_session_id');
+    // Do not update end_time or duration yet, just pass seconds to next page
+    router.replace({ pathname: '/fall-asleep', params: { slept: seconds.toString() } });
   };
 
   return (

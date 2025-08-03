@@ -48,7 +48,7 @@ export default function OnboardingCycleRegularityScreen() {
   return (
     <BackgroundImage>
       <View style={styles.container}>
-        <Text style={styles.title}>Are your cycles regular?</Text>
+        <Text style={styles.title}>Are your sleeping regular?</Text>
         <Text style={styles.subtitle}>This helps us provide more accurate predictions</Text>
         
         {error ? <Text style={styles.error}>{error}</Text> : null}

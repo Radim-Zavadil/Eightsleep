@@ -79,16 +79,43 @@ CREATE TABLE journal_entries (
     FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
 );
 
--- Checklist Items Table (linked to profiles)
-CREATE TABLE checklist_items (
-    item_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    profile_id UUID NOT NULL,
-    date DATE NOT NULL,
-    item_text TEXT NOT NULL,
-    is_completed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+-- Enable Row Level Security for journal_entries
+ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for journal_entries
+CREATE POLICY "Users can view own journal entries" ON journal_entries
+  FOR SELECT USING (auth.uid() = profile_id);
+
+CREATE POLICY "Users can insert own journal entries" ON journal_entries
+  FOR INSERT WITH CHECK (auth.uid() = profile_id);
+
+CREATE POLICY "Users can update own journal entries" ON journal_entries
+  FOR UPDATE USING (auth.uid() = profile_id);
+
+CREATE POLICY "Users can delete own journal entries" ON journal_entries
+  FOR DELETE USING (auth.uid() = profile_id);
+
+-- Drop old table if it exists
+DROP TABLE IF EXISTS checlist_items;
+
+-- Create new table for bedroom checklist items
+CREATE TABLE IF NOT EXISTS bedroom_checklist_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid REFERENCES auth.users NOT NULL,
+  rule_name text NOT NULL,
+  goal text,
+  checked boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone DEFAULT timezone('utc', now())
 );
+
+-- Add a date column for per-day checklist tracking
+ALTER TABLE bedroom_checklist_items
+  ADD COLUMN IF NOT EXISTS date date DEFAULT (CURRENT_DATE);
+-- Optional: index for faster date queries
+CREATE INDEX IF NOT EXISTS idx_bedroom_checklist_user_date ON bedroom_checklist_items (user_id, date);
+
+-- Optional: index for faster user lookups
+CREATE INDEX IF NOT EXISTS idx_bedroom_checklist_user_id ON bedroom_checklist_items (user_id);
 
 -- Create indexes for better query performance
 CREATE INDEX idx_sleep_records_profile_id ON sleep_records(profile_id);
