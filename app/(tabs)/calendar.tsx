@@ -2,29 +2,61 @@ import { StyleSheet, View, FlatList, Dimensions } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import DayProgressRings from '@/components/DayProgressRings';
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { supabase } from '@/utils/supabase'; // Adjust path to your supabase client
+import { useAuth } from '../../src/utils/useAuth';
+import { calculateSleepScore } from '../../src/utils/calculateSleepScore';
 
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 // Helper to format date as yyyy-mm-dd
 const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
-// Dummy data for this week
-const today = new Date();
-const weekStart = new Date(today);
-weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7)); // Monday start
-const weekDates = Array.from({ length: 7 }, (_, i) => {
-  const d = new Date(weekStart);
-  d.setDate(weekStart.getDate() + i);
-  return formatDate(d);
-});
+// Types for our data
+interface DayData {
+  sleepScore: number; // 0-1 (0-100%) - calculated from sleep duration, bedroom score, journal entries
+  bedroomScore: number; // 0-1 (0-100%) - calculated from checks
+  journalEntries: number; // 0-1 (0% or 100%) - 1+ entries = 100%
+}
+
+interface SleepSession {
+  start_time: string;
+  end_time: string;
+  duration?: number;
+}
+
+interface Check {
+  id: number;
+  user_id: string;
+  rule_name: string;
+  goal: string;
+  checked: boolean;
+  created_at: string;
+  date: string;
+}
+
+interface JournalEntry {
+  entry_id: number;
+  date: string;
+  text_content: string;
+  created_at: string;
+  profile_id: string;
+}
 
 // Generate months from 2 years ago to 2 years in the future
 const monthsBefore = 24;
 const monthsAfter = 24;
 const totalMonths = monthsBefore + monthsAfter + 1;
-const startMonth = new Date(today.getFullYear(), today.getMonth() - monthsBefore, 1);
+
+// Use a fresh date calculation for the start month
+const getCurrentDate = () => new Date();
+const getStartMonth = () => {
+  const current = getCurrentDate();
+  return new Date(current.getFullYear(), current.getMonth() - monthsBefore, 1);
+};
+
+const startMonth = getStartMonth();
 
 function getMonthMatrix(year: number, month: number) {
   // Returns a 2D array (weeks x days) for the month
@@ -68,41 +100,241 @@ const months = Array.from({ length: totalMonths }, (_, i) => {
   };
 });
 
-// Find the month and week index for today
-const todayMonthKey = `${today.getFullYear()}-${today.getMonth()}`;
-const initialMonthIndex = months.findIndex(m => m.key === todayMonthKey);
-let initialWeekIndex = 0;
-if (initialMonthIndex !== -1) {
-  const matrix = months[initialMonthIndex].matrix;
-  for (let i = 0; i < matrix.length; i++) {
-    if (matrix[i].some(date => date && formatDate(date) === formatDate(today))) {
-      initialWeekIndex = i;
-      break;
-    }
-  }
-}
+console.log('Generated months around today:', months.slice(20, 30).map(m => ({ key: m.key, label: m.label })));
 
 export default function CalendarScreen() {
   const monthListRef = useRef<FlatList>(null);
+  const [dayDataMap, setDayDataMap] = useState<Record<string, DayData>>({});
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  // Always scroll to the week containing today when the screen is focused
+  // Calculate current date inside component
+  const getCurrentToday = () => new Date();
+
+  // Helper function to scroll to today's date
+  const scrollToToday = () => {
+    // Find the month and week index for today (recalculate each time)
+    const currentToday = getCurrentToday();
+    const todayMonthKey = `${currentToday.getFullYear()}-${currentToday.getMonth()}`;
+    const todayMonthIndex = months.findIndex(m => m.key === todayMonthKey);
+    
+    console.log('Current date:', currentToday);
+    console.log('Current month (0-based):', currentToday.getMonth());
+    console.log('Looking for month key:', todayMonthKey);
+    console.log('Found month index:', todayMonthIndex);
+    
+    if (todayMonthIndex === -1 || !monthListRef.current) {
+      console.log('Month not found or ref not available');
+      return;
+    }
+    
+    // Find which week contains today
+    let todayWeekIndex = 0;
+    const matrix = months[todayMonthIndex].matrix;
+    const todayFormatted = formatDate(currentToday);
+    
+    for (let i = 0; i < matrix.length; i++) {
+      if (matrix[i].some(date => date && formatDate(date) === todayFormatted)) {
+        todayWeekIndex = i;
+        break;
+      }
+    }
+    
+    console.log('Today week index:', todayWeekIndex);
+    
+    // Calculate offset to scroll to today's month/week - use manual offset calculation
+    const monthHeight = 430; // Reduced from 500
+    const headerHeight = 50; // Month label height
+    const weekHeight = 52; // Height per week row (including margins)
+    
+    // Calculate the offset to position today's month properly
+    const baseOffset = todayMonthIndex * monthHeight;
+    const weekOffset = todayWeekIndex * weekHeight;
+    const totalOffset = Math.max(0, baseOffset + weekOffset - 100); // Less aggressive centering
+    
+    console.log('Month index:', todayMonthIndex, 'Week index:', todayWeekIndex);
+    console.log('Using monthHeight:', monthHeight);
+    console.log('Base offset:', baseOffset, 'Week offset:', weekOffset);
+    console.log('Scrolling to offset:', totalOffset);
+    
+    setTimeout(() => {
+      monthListRef.current?.scrollToOffset({ offset: totalOffset, animated: true });
+    }, 600);
+  };
+
+  // Helper function to calculate sleep duration from sleep session
+  const calculateSleepDuration = (session: SleepSession): number => {
+    if (session.duration) {
+      return session.duration;
+    }
+    if (session.start_time && session.end_time) {
+      const start = new Date(session.start_time);
+      const end = new Date(session.end_time);
+      return (end.getTime() - start.getTime()) / (1000 * 60 * 60); // hours
+    }
+    return 0;
+  };
+
+  // Helper function to calculate bedroom score from bedroom checklist items
+  const calculateBedroomScore = (bedroomItemsForDay: Check[]): number => {
+    if (bedroomItemsForDay.length === 0) return 0;
+    
+    // Calculate bedroom score exactly like in your bedroom.tsx:
+    // percentage of checked rules
+    const checkedItems = bedroomItemsForDay.filter(item => item.checked);
+    const score = (checkedItems.length / bedroomItemsForDay.length) * 100;
+    
+    // Return as 0-1 for the calendar (since DayProgressRings expects 0-1)
+    return score / 100;
+  };
+
+  // Function to fetch all data from Supabase and calculate scores
+  const fetchCalendarData = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      
+      // Calculate date range for fetching (from 2 years ago to 2 years in future)
+      const currentToday = getCurrentToday();
+      const startDate = new Date(currentToday.getFullYear() - 2, 0, 1);
+      const endDate = new Date(currentToday.getFullYear() + 2, 11, 31);
+      const startDateStr = formatDate(startDate);
+      const endDateStr = formatDate(endDate);
+
+      // Fetch sleep sessions
+      const { data: sleepSessions, error: sleepError } = await supabase
+        .from('sleep_sessions')
+        .select('start_time, end_time, duration')
+        .eq('profile_id', user.id)
+        .not('end_time', 'is', null)
+        .gte('end_time', startDateStr)
+        .lte('end_time', endDateStr);
+
+      if (sleepError) throw sleepError;
+
+      // Fetch bedroom checklist items for bedroom score calculation
+      const { data: bedroomChecklistItems, error: checksError } = await supabase
+        .from('bedroom_checklist_items')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', startDateStr)
+        .lte('date', endDateStr);
+
+      if (checksError) throw checksError;
+
+      // Fetch journal entries
+      const { data: journalEntries, error: journalsError } = await supabase
+        .from('journal_entries')
+        .select('*')
+        .eq('profile_id', user.id)
+        .gte('date', startDateStr)
+        .lte('date', endDateStr);
+
+      if (journalsError) throw journalsError;
+
+      // Process the data by day
+      const dataMap: Record<string, DayData> = {};
+
+      // Group sleep sessions by day (based on end_time)
+      const sleepByDay: Record<string, SleepSession[]> = {};
+      sleepSessions?.forEach((session: SleepSession) => {
+        const endDate = new Date(session.end_time);
+        const dayKey = formatDate(endDate);
+        if (!sleepByDay[dayKey]) sleepByDay[dayKey] = [];
+        sleepByDay[dayKey].push(session);
+      });
+
+      // Group bedroom checklist items by day
+      const bedroomItemsByDay: Record<string, Check[]> = {};
+      bedroomChecklistItems?.forEach((item: Check) => {
+        const dayKey = item.date; // Use the date column directly since it's in YYYY-MM-DD format
+        if (!bedroomItemsByDay[dayKey]) bedroomItemsByDay[dayKey] = [];
+        bedroomItemsByDay[dayKey].push(item);
+      });
+
+      // Group journal entries by day
+      const journalsByDay: Record<string, JournalEntry[]> = {};
+      journalEntries?.forEach((entry: JournalEntry) => {
+        const dayKey = entry.date; // Use the date column directly since it's in YYYY-MM-DD format
+        if (!journalsByDay[dayKey]) journalsByDay[dayKey] = [];
+        journalsByDay[dayKey].push(entry);
+      });
+
+      // Calculate scores for each day
+      const allDates = new Set([
+        ...Object.keys(sleepByDay),
+        ...Object.keys(bedroomItemsByDay),
+        ...Object.keys(journalsByDay)
+      ]);
+
+      allDates.forEach(dayKey => {
+        const sleepSessionsForDay = sleepByDay[dayKey] || [];
+        const bedroomItemsForDay = bedroomItemsByDay[dayKey] || [];
+        const journalsForDay = journalsByDay[dayKey] || [];
+
+        // Calculate sleep duration (take the latest session for the day)
+        const latestSleepSession = sleepSessionsForDay
+          .sort((a, b) => new Date(b.end_time).getTime() - new Date(a.end_time).getTime())[0];
+        
+        const sleepDurationHours = latestSleepSession ? calculateSleepDuration(latestSleepSession) : 0;
+
+        // Calculate bedroom score from bedroom checklist items
+        const bedroomScore = calculateBedroomScore(bedroomItemsForDay);
+
+        // Calculate journal entries score (1+ entries = 100%)
+        const journalEntriesScore = journalsForDay.length > 0 ? 1 : 0;
+
+        // Calculate overall sleep score using your existing function
+        const sleepScore = calculateSleepScore({
+          sleepDurationHours,
+          bedroomScore,
+          journalEntries: journalsForDay.length,
+          periodDays: 1
+        });
+
+        dataMap[dayKey] = {
+          sleepScore: sleepScore / 100, // Convert from 0-100 to 0-1
+          bedroomScore,
+          journalEntries: journalEntriesScore,
+        };
+      });
+
+      setDayDataMap(dataMap);
+    } catch (error) {
+      console.error('Error fetching calendar data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchCalendarData();
+  }, [user]);
+
+  // Scroll to today after data is loaded
+  useEffect(() => {
+    if (!loading) {
+      scrollToToday();
+    }
+  }, [loading]);
+
+  // Handle screen focus - refetch data and scroll to today every time
   useFocusEffect(
     React.useCallback(() => {
-      if (monthListRef.current && initialMonthIndex > 0) {
-        setTimeout(() => {
-          const offset = initialMonthIndex * 370 + initialWeekIndex * 470;
-          monthListRef.current?.scrollToOffset({ offset, animated: false });
-        }, 150);
-      }
-    }, [])
+      fetchCalendarData().then(() => {
+        // Always scroll to today when screen is focused
+        scrollToToday();
+      });
+    }, [user])
   );
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>Calendar</ThemedText>
-      <ThemedText style={styles.subtitle}>Track your sleep patterns over time</ThemedText>
       <View style={styles.header}>
         <ThemedText style={styles.title}>CALENDAR</ThemedText>
+        <ThemedText style={styles.subtitle}>Track your sleep patterns over time</ThemedText>
       </View>
       {/* Static weekday header */}
       <View style={styles.staticWeekdaysRow}>
@@ -124,16 +356,21 @@ export default function CalendarScreen() {
                   if (!date) {
                     return <View key={di} style={styles.dayCell} />;
                   }
+                  
                   const key = formatDate(date);
-                  const isThisWeek = weekDates.includes(key);
-                  const isToday = key === formatDate(today);
-                  const isFuture = date > today;
+                  const currentToday = getCurrentToday(); // Use fresh date for comparison
+                  const isToday = key === formatDate(currentToday);
+                  const isFuture = date > currentToday;
+                  
+                  // Get data for this day, default to 0 if no data
+                  const dayData = dayDataMap[key] || { sleepScore: 0, bedroomScore: 0, journalEntries: 0 };
+                  
                   return (
                     <View key={di} style={styles.dayCell}>
                       <DayProgressRings
-                        sleepLength={isThisWeek ? Math.random() : 0}
-                        bedroomScore={isThisWeek ? Math.random() : 0}
-                        overallScore={isThisWeek ? Math.random() : 0}
+                        sleepLength={dayData.journalEntries} // Journal entries (0 or 1)
+                        bedroomScore={dayData.bedroomScore} // Calculated from checks
+                        overallScore={dayData.sleepScore} // Calculated sleep score
                         isFuture={isFuture}
                         isToday={isToday}
                         size={40}
@@ -157,7 +394,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 60,
