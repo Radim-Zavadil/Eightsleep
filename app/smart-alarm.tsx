@@ -1,17 +1,222 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { ChevronLeft, Info } from 'react-native-feather';
-import { useSmartContext } from '@/components/Context/AlarmContext';
+import { supabase } from '@/utils/supabase'; // Adjust import path as needed
 import AlarmModal from '@/components/AlarmModal';
 import AlarmCard from '@/components/AlarmCard';
 import { Alarm } from '@/types/alarm';
 
 const SmartAlarmPage = () => {
-  const { alarms, addAlarm, toggleAlarm, updateAlarm, deleteAlarm } = useSmartContext();
+  const [alarms, setAlarms] = useState<Alarm[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingAlarm, setEditingAlarm] = useState<Alarm | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  // Fetch alarms from Supabase
+  const fetchAlarms = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('alarms')
+        .select('*')
+        .order('time', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching alarms:', error);
+        Alert.alert('Error', 'Failed to fetch alarms');
+        return;
+      }
+
+      // Transform database data to match your Alarm type
+      const transformedAlarms = data.map(alarm => ({
+        id: alarm.id,
+        time: alarm.time,
+        label: alarm.label || '',
+        repeatDays: alarm.repeat_days || [],
+        isEnabled: alarm.is_enabled,
+        sound: alarm.sound || 'default',
+        vibrate: alarm.vibrate,
+        snoozeEnabled: alarm.snooze_enabled,
+        snoozeDuration: alarm.snooze_duration,
+        createdAt: alarm.created_at,
+        updatedAt: alarm.updated_at
+      }));
+
+      setAlarms(transformedAlarms);
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load alarms on component mount
+  useEffect(() => {
+    if (user) {
+      fetchAlarms();
+    }
+  }, [user]);
+
+  // Add new alarm to Supabase
+  const addAlarm = async (alarmData: Omit<Alarm, 'id' | 'createdAt'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('alarms')
+        .insert([{
+          user_id: user?.id,
+          time: alarmData.time,
+          label: alarmData.label,
+          repeat_days: alarmData.repeatDays,
+          is_enabled: alarmData.isEnabled,
+          sound: alarmData.sound,
+          vibrate: alarmData.vibrate,
+          snooze_enabled: alarmData.snoozeEnabled,
+          snooze_duration: alarmData.snoozeDuration
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding alarm:', error);
+        Alert.alert('Error', 'Failed to add alarm');
+        return;
+      }
+
+      // Transform and add to local state
+      const newAlarm = {
+        id: data.id,
+        time: data.time,
+        label: data.label || '',
+        repeatDays: data.repeat_days || [],
+        isEnabled: data.is_enabled,
+        sound: data.sound || 'default',
+        vibrate: data.vibrate,
+        snoozeEnabled: data.snooze_enabled,
+        snoozeDuration: data.snooze_duration,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+
+      setAlarms(prev => [...prev, newAlarm]);
+      Alert.alert('Success', 'Alarm added successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    }
+  };
+
+  // Update alarm in Supabase
+  const updateAlarm = async (id: string, alarmData: Omit<Alarm, 'id' | 'createdAt'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('alarms')
+        .update({
+          time: alarmData.time,
+          label: alarmData.label,
+          repeat_days: alarmData.repeatDays,
+          is_enabled: alarmData.isEnabled,
+          sound: alarmData.sound,
+          vibrate: alarmData.vibrate,
+          snooze_enabled: alarmData.snoozeEnabled,
+          snooze_duration: alarmData.snoozeDuration
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating alarm:', error);
+        Alert.alert('Error', 'Failed to update alarm');
+        return;
+      }
+
+      // Update local state
+      const updatedAlarm = {
+        id: data.id,
+        time: data.time,
+        label: data.label || '',
+        repeatDays: data.repeat_days || [],
+        isEnabled: data.is_enabled,
+        sound: data.sound || 'default',
+        vibrate: data.vibrate,
+        snoozeEnabled: data.snooze_enabled,
+        snoozeDuration: data.snooze_duration,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      };
+
+      setAlarms(prev => prev.map(alarm => 
+        alarm.id === id ? updatedAlarm : alarm
+      ));
+      Alert.alert('Success', 'Alarm updated successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    }
+  };
+
+  // Toggle alarm enabled/disabled
+  const toggleAlarm = async (id: string) => {
+    try {
+      const alarm = alarms.find(a => a.id === id);
+      if (!alarm) return;
+
+      const { error } = await supabase
+        .from('alarms')
+        .update({ is_enabled: !alarm.isEnabled })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error toggling alarm:', error);
+        Alert.alert('Error', 'Failed to toggle alarm');
+        return;
+      }
+
+      // Update local state
+      setAlarms(prev => prev.map(a => 
+        a.id === id ? { ...a, isEnabled: !a.isEnabled } : a
+      ));
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    }
+  };
+
+  // Delete alarm from Supabase
+  const deleteAlarm = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('alarms')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting alarm:', error);
+        Alert.alert('Error', 'Failed to delete alarm');
+        return;
+      }
+
+      // Update local state
+      setAlarms(prev => prev.filter(alarm => alarm.id !== id));
+      Alert.alert('Success', 'Alarm deleted successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    }
+  };
 
   const handleAddAlarm = () => {
     setEditingAlarm(undefined);
@@ -42,6 +247,22 @@ const SmartAlarmPage = () => {
     alarm.isEnabled && alarm.repeatDays.includes(today)
   );
   const hasActiveAlarms = todayAlarms.length > 0;
+
+  if (loading) {
+    return (
+      <View style={[styles.backgroundImage, styles.loadingContainer]}>
+        <Text style={styles.loadingText}>Loading alarms...</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={[styles.backgroundImage, styles.loadingContainer]}>
+        <Text style={styles.loadingText}>Please log in to view your alarms</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.backgroundImage}>
@@ -173,6 +394,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 16,
   },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
 });
 
-export default SmartAlarmPage; 
+export default SmartAlarmPage;
