@@ -44,21 +44,19 @@ interface JournalEntry {
   profile_id: string;
 }
 
-// Dummy data for this week
-const today = new Date();
-const weekStart = new Date(today);
-weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7)); // Monday start
-const weekDates = Array.from({ length: 7 }, (_, i) => {
-  const d = new Date(weekStart);
-  d.setDate(weekStart.getDate() + i);
-  return formatDate(d);
-});
-
 // Generate months from 2 years ago to 2 years in the future
 const monthsBefore = 24;
 const monthsAfter = 24;
 const totalMonths = monthsBefore + monthsAfter + 1;
-const startMonth = new Date(today.getFullYear(), today.getMonth() - monthsBefore, 1);
+
+// Use a fresh date calculation for the start month
+const getCurrentDate = () => new Date();
+const getStartMonth = () => {
+  const current = getCurrentDate();
+  return new Date(current.getFullYear(), current.getMonth() - monthsBefore, 1);
+};
+
+const startMonth = getStartMonth();
 
 function getMonthMatrix(year: number, month: number) {
   // Returns a 2D array (weeks x days) for the month
@@ -102,25 +100,67 @@ const months = Array.from({ length: totalMonths }, (_, i) => {
   };
 });
 
-// Find the month and week index for today
-const todayMonthKey = `${today.getFullYear()}-${today.getMonth()}`;
-const initialMonthIndex = months.findIndex(m => m.key === todayMonthKey);
-let initialWeekIndex = 0;
-if (initialMonthIndex !== -1) {
-  const matrix = months[initialMonthIndex].matrix;
-  for (let i = 0; i < matrix.length; i++) {
-    if (matrix[i].some(date => date && formatDate(date) === formatDate(today))) {
-      initialWeekIndex = i;
-      break;
-    }
-  }
-}
+console.log('Generated months around today:', months.slice(20, 30).map(m => ({ key: m.key, label: m.label })));
 
 export default function CalendarScreen() {
   const monthListRef = useRef<FlatList>(null);
   const [dayDataMap, setDayDataMap] = useState<Record<string, DayData>>({});
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+
+  // Calculate current date inside component
+  const getCurrentToday = () => new Date();
+
+  // Helper function to scroll to today's date
+  const scrollToToday = () => {
+    // Find the month and week index for today (recalculate each time)
+    const currentToday = getCurrentToday();
+    const todayMonthKey = `${currentToday.getFullYear()}-${currentToday.getMonth()}`;
+    const todayMonthIndex = months.findIndex(m => m.key === todayMonthKey);
+    
+    console.log('Current date:', currentToday);
+    console.log('Current month (0-based):', currentToday.getMonth());
+    console.log('Looking for month key:', todayMonthKey);
+    console.log('Found month index:', todayMonthIndex);
+    
+    if (todayMonthIndex === -1 || !monthListRef.current) {
+      console.log('Month not found or ref not available');
+      return;
+    }
+    
+    // Find which week contains today
+    let todayWeekIndex = 0;
+    const matrix = months[todayMonthIndex].matrix;
+    const todayFormatted = formatDate(currentToday);
+    
+    for (let i = 0; i < matrix.length; i++) {
+      if (matrix[i].some(date => date && formatDate(date) === todayFormatted)) {
+        todayWeekIndex = i;
+        break;
+      }
+    }
+    
+    console.log('Today week index:', todayWeekIndex);
+    
+    // Calculate offset to scroll to today's month/week - use manual offset calculation
+    const monthHeight = 430; // Reduced from 500
+    const headerHeight = 50; // Month label height
+    const weekHeight = 52; // Height per week row (including margins)
+    
+    // Calculate the offset to position today's month properly
+    const baseOffset = todayMonthIndex * monthHeight;
+    const weekOffset = todayWeekIndex * weekHeight;
+    const totalOffset = Math.max(0, baseOffset + weekOffset - 100); // Less aggressive centering
+    
+    console.log('Month index:', todayMonthIndex, 'Week index:', todayWeekIndex);
+    console.log('Using monthHeight:', monthHeight);
+    console.log('Base offset:', baseOffset, 'Week offset:', weekOffset);
+    console.log('Scrolling to offset:', totalOffset);
+    
+    setTimeout(() => {
+      monthListRef.current?.scrollToOffset({ offset: totalOffset, animated: true });
+    }, 600);
+  };
 
   // Helper function to calculate sleep duration from sleep session
   const calculateSleepDuration = (session: SleepSession): number => {
@@ -156,8 +196,9 @@ export default function CalendarScreen() {
       setLoading(true);
       
       // Calculate date range for fetching (from 2 years ago to 2 years in future)
-      const startDate = new Date(today.getFullYear() - 2, 0, 1);
-      const endDate = new Date(today.getFullYear() + 2, 11, 31);
+      const currentToday = getCurrentToday();
+      const startDate = new Date(currentToday.getFullYear() - 2, 0, 1);
+      const endDate = new Date(currentToday.getFullYear() + 2, 11, 31);
       const startDateStr = formatDate(startDate);
       const endDateStr = formatDate(endDate);
 
@@ -267,32 +308,33 @@ export default function CalendarScreen() {
     }
   };
 
-  // Fetch data on component mount and when screen is focused
+  // Fetch data on component mount
   useEffect(() => {
     fetchCalendarData();
   }, [user]);
 
+  // Scroll to today after data is loaded
+  useEffect(() => {
+    if (!loading) {
+      scrollToToday();
+    }
+  }, [loading]);
+
+  // Handle screen focus - refetch data and scroll to today every time
   useFocusEffect(
     React.useCallback(() => {
-      // Refetch data when screen is focused
-      fetchCalendarData();
-      
-      // Scroll to current week
-      if (monthListRef.current && initialMonthIndex > 0) {
-        setTimeout(() => {
-          const offset = initialMonthIndex * 370 + initialWeekIndex * 470;
-          monthListRef.current?.scrollToOffset({ offset, animated: false });
-        }, 150);
-      }
+      fetchCalendarData().then(() => {
+        // Always scroll to today when screen is focused
+        scrollToToday();
+      });
     }, [user])
   );
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>Calendar</ThemedText>
-      <ThemedText style={styles.subtitle}>Track your sleep patterns over time</ThemedText>
       <View style={styles.header}>
         <ThemedText style={styles.title}>CALENDAR</ThemedText>
+        <ThemedText style={styles.subtitle}>Track your sleep patterns over time</ThemedText>
       </View>
       {/* Static weekday header */}
       <View style={styles.staticWeekdaysRow}>
@@ -316,8 +358,9 @@ export default function CalendarScreen() {
                   }
                   
                   const key = formatDate(date);
-                  const isToday = key === formatDate(today);
-                  const isFuture = date > today;
+                  const currentToday = getCurrentToday(); // Use fresh date for comparison
+                  const isToday = key === formatDate(currentToday);
+                  const isFuture = date > currentToday;
                   
                   // Get data for this day, default to 0 if no data
                   const dayData = dayDataMap[key] || { sleepScore: 0, bedroomScore: 0, journalEntries: 0 };
@@ -351,7 +394,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#000000',
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 60,
