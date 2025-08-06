@@ -8,7 +8,7 @@ const SleepDebtComponent = () => {
   const { user } = useAuth();
   const [sleepDebt, setSleepDebt] = useState<string>('-6h 6m');
   const [sleepGoal, setSleepGoal] = useState<number>(0);
-  const [lastSleepDuration, setLastSleepDuration] = useState<number>(0);
+  const [todaysSleepDuration, setTodaysSleepDuration] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,25 +30,33 @@ const SleepDebtComponent = () => {
           setSleepGoal(8);
         }
 
-        // Fetch last sleep session
+        // Get today's date range (start of today to start of tomorrow)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Fetch today's sleep sessions
         const { data: sleepData, error: sleepError } = await supabase
           .from('sleep_sessions')
           .select('duration')
           .eq('profile_id', user.id)
           .not('end_time', 'is', null)
-          .order('end_time', { ascending: false })
-          .limit(1)
-          .single();
+          .gte('end_time', today.toISOString())
+          .lt('end_time', tomorrow.toISOString())
+          .order('end_time', { ascending: false });
 
-        if (!sleepError && sleepData?.duration) {
-          setLastSleepDuration(sleepData.duration);
+        if (!sleepError && sleepData && sleepData.length > 0) {
+          // Sum all sleep sessions for today (in case there are multiple naps)
+          const totalDuration = sleepData.reduce((sum, session) => sum + (session.duration || 0), 0);
+          setTodaysSleepDuration(totalDuration);
         } else {
-          setLastSleepDuration(0);
+          setTodaysSleepDuration(0);
         }
       } catch (error) {
         console.error('Error fetching sleep data:', error);
         setSleepGoal(8);
-        setLastSleepDuration(0);
+        setTodaysSleepDuration(0);
       } finally {
         setLoading(false);
       }
@@ -59,8 +67,8 @@ const SleepDebtComponent = () => {
 
   useEffect(() => {
     if (!loading) {
-      // Calculate sleep debt: sleep goal - last sleep length
-      const debt = sleepGoal - lastSleepDuration;
+      // Calculate sleep debt: sleep goal - today's total sleep
+      const debt = sleepGoal - todaysSleepDuration;
       
       // Convert to hours and minutes
       const hours = Math.floor(Math.abs(debt));
@@ -70,13 +78,13 @@ const SleepDebtComponent = () => {
       const sign = debt >= 0 ? '+' : '-';
       setSleepDebt(`${sign}${hours}h ${minutes}m`);
     }
-  }, [sleepGoal, lastSleepDuration, loading]);
+  }, [sleepGoal, todaysSleepDuration, loading]);
 
   // Determine color based on sleep debt
   const getSleepDebtColor = () => {
     if (loading) return '#30FA48'; // Default color while loading
     
-    const debt = sleepGoal - lastSleepDuration;
+    const debt = sleepGoal - todaysSleepDuration;
     return debt >= 0 ? '#E2706E' : '#30FA48';
   };
 
