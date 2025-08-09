@@ -17,6 +17,7 @@ import SocialJetLegSection from '../../components/SocialJetLegSection';
 import CaffeineWindowsSection from '@/components/CaffeineWindows';
 import JournalSection from '@/components/JournalSection';
 import NsdrComponent from '@/components/NSDR';
+import NapsWindow from '@/components/NapsWindow';
 
 import GradientText from '@/components/ui/GradientText';
 import Widgets from "@/components/Widgets";
@@ -226,6 +227,8 @@ const HomePage: React.FC = () => {
       </View>
       <Widgets />
       <ScrollView style={styles.sectionsContainer}>
+        
+        <NapsWindow/>
 
         {/**SLEEP SECTION */}
         <SleepSection sleepLength={sleepLength} score={sleepScore} />
