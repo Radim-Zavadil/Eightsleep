@@ -120,24 +120,24 @@ const SleepDebtComponent = () => {
 
       // Calculate recommendation text
       if (lastSleepStartTime) {
-        // Calculate total sleep needed (goal + debt if positive)
-        const totalSleepNeeded = sleepGoal + Math.max(0, debt);
+        // FIXED: Just use the sleep goal for wake up time calculation
+        // The wake up time should be start time + sleep goal duration
+        const wakeUpTime = new Date(lastSleepStartTime.getTime() + sleepGoal * 60 * 60 * 1000);
         
-        // Calculate wake up time
-        const wakeUpTime = new Date(lastSleepStartTime.getTime() + totalSleepNeeded * 60 * 60 * 1000);
-        
-        // Calculate number of 20-minute naps needed to cover debt
-        const napsNeeded = Math.max(0, Math.ceil(debt / (20/60))); // 20 minutes = 1/3 hour
+        // Calculate number of 20-minute naps needed to cover debt (only if debt is positive)
+        const napsNeeded = Math.max(0, Math.ceil(Math.max(0, debt) / (20/60))); // 20 minutes = 1/3 hour
         
         const startTimeFormatted = formatTime(lastSleepStartTime);
         const wakeUpTimeFormatted = formatTime(wakeUpTime);
         const goalFormatted = formatDuration(sleepGoal);
         
-        if (napsNeeded > 0) {
+        if (debt > 0 && napsNeeded > 0) {
+          // If there's a positive debt, suggest naps
           setRecommendationText(
             `Sleep between ${startTimeFormatted} - ${wakeUpTimeFormatted} tonight, to get a minimum recommended sleep of ${goalFormatted} of sleep or take ${napsNeeded}x 20m naps.`
           );
         } else {
+          // If no debt or negative debt (surplus sleep), just show the normal recommendation
           setRecommendationText(
             `Sleep between ${startTimeFormatted} - ${wakeUpTimeFormatted} tonight, to get a minimum recommended sleep of ${goalFormatted} of sleep.`
           );
