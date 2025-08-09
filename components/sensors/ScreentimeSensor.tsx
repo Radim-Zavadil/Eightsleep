@@ -16,7 +16,7 @@ const ScreentimeCard: React.FC = () => {
   return (
 
     <LinearGradient
-      colors={["#3B4E9B", "#162157", "#000926"]}
+      colors={["#7a746d", "#423e39", "#181818"]}
       style={{
         width: '100%',
         height: 240,
@@ -60,7 +60,7 @@ const ScreentimeCard: React.FC = () => {
             </Svg>
         </View>
         
-
+        {/*
         <View
           style={{
             backgroundColor: '#394267',
@@ -80,13 +80,15 @@ const ScreentimeCard: React.FC = () => {
             {showScreenWidget ? "Active" : "Inactive"}
           </Text>
         </View>
+        */}
+
       </View>
 
       {/* Category Text */}
       <Text
         style={{
           marginTop: 12,
-          color: '#9CA7CC',
+          color: '#A0A0A0',
           fontSize: 12,
           fontFamily: "Inter",
           letterSpacing: 4,
@@ -99,7 +101,7 @@ const ScreentimeCard: React.FC = () => {
       {/* Title */}
       <Text
         style={{
-          color: '#fff',
+          color: '#CDCFCF',
           fontSize: 22,
           fontFamily: "Inter",
           fontWeight: '400',
@@ -112,7 +114,7 @@ const ScreentimeCard: React.FC = () => {
       {/* Description */}
       <Text
         style={{
-          color: '#9CA7CC',
+          color: '#A0A0A0',
           fontSize: 14,
           fontFamily: "Inter",
           marginTop: 6,
@@ -123,7 +125,7 @@ const ScreentimeCard: React.FC = () => {
         Tracks screen time and its impact on your sleep, offering personalized insights for healthier habits.
       </Text>
 
-      {/* Button */}
+      {/* Button
       <TouchableOpacity
         style={{
           position: 'absolute',
@@ -147,6 +149,7 @@ const ScreentimeCard: React.FC = () => {
           {showScreenWidget ? "Added" : "Get"}
         </Text>
       </TouchableOpacity>
+       */}
     </LinearGradient>
   );
 };
