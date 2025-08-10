@@ -14,7 +14,6 @@ import * as d3Shape from 'd3-shape';
 import SleepSection from '../../components/SleepSection';
 import RecoverySection from '../../components/RecoverySection';
 import SocialJetLegSection from '../../components/SocialJetLegSection';
-import CaffeineWindowsSection from '@/components/CaffeineWindows';
 import JournalSection from '@/components/JournalSection';
 import NsdrComponent from '@/components/NSDR';
 import NapsWindow from '@/components/NapsWindow';
@@ -252,10 +251,6 @@ const HomePage: React.FC = () => {
         
         {/*CIRCADIAN RHYTHM */}
         {showCircadianWidget && <CircadianTimer />}
-        
-
-        {/*CAFFEINE WINDOWS */}
-        {showCaffeineWidget && <CaffeineWindowsSection />}
         
         <View style={styles.quickStartContainer}>
           <ThemedText style={styles.quickStartTitle}>Quick start</ThemedText>

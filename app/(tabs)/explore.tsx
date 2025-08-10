@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Image, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
@@ -22,11 +22,14 @@ export default function ExploreScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.cardsContainer}>
           
-          <ScreentimeSensor />
+          
           <VitaminDSensor />
           <CaffeineWindowsSensor />
-          <CircadianRhythmSensor />
           <SmartAlarmSensor />
+
+          <Text style={styles.comingSoonText}>Coming soon</Text>
+          <CircadianRhythmSensor />
+          <ScreentimeSensor />
 
         </View>
       </ScrollView>
@@ -123,5 +126,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#808080',
     marginBottom: 16,
+  },
+  comingSoonText: {
+    color: "#fff",
+    fontSize: 17,
+    marginVertical: 30
   }
 });

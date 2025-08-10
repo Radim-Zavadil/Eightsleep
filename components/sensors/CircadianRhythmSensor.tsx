@@ -15,7 +15,7 @@ const CircadianRhythmSensor: React.FC = () => {
 
   return (
     <LinearGradient
-      colors={["#349EBF", "#0D5D7C", "#043448"]}
+      colors={["#7a746d", "#423e39", "#181818"]}
       style={{
         width: '100%',
         height: 240,
@@ -59,7 +59,7 @@ const CircadianRhythmSensor: React.FC = () => {
             </Svg>
         </View>
         
-
+        {/*
         <View
           style={{
             backgroundColor:'#407580',
@@ -79,13 +79,14 @@ const CircadianRhythmSensor: React.FC = () => {
             {showCircadianWidget ? "Active" : "Inactive"}
           </Text>
         </View>
+        */}
       </View>
 
       {/* Category Text */}
       <Text
         style={{
           marginTop: 12,
-          color: '#9CC3CC',
+          color: '#A0A0A0',
           fontSize: 12,
           fontFamily: "Inter",
           letterSpacing: 4,
@@ -98,7 +99,7 @@ const CircadianRhythmSensor: React.FC = () => {
       {/* Title */}
       <Text
         style={{
-          color: '#fff',
+          color: '#CDCFCF',
           fontSize: 22,
           fontFamily: "Inter",
           fontWeight: '400',
@@ -111,7 +112,7 @@ const CircadianRhythmSensor: React.FC = () => {
       {/* Description */}
       <Text
         style={{
-          color: '#9CC3CC',
+          color: '#A0A0A0',
           fontSize: 14,
           fontFamily: "Inter",
           marginTop: 6,
@@ -122,7 +123,7 @@ const CircadianRhythmSensor: React.FC = () => {
         Optimize your daily routine with proper eating and exercise throughout a day to ensure better life.
       </Text>
 
-      {/* Button */}
+      {/* Button
       <TouchableOpacity
         style={{
           position: 'absolute',
@@ -146,6 +147,7 @@ const CircadianRhythmSensor: React.FC = () => {
           {showCircadianWidget ? "Added" : "Get"}
         </Text>
       </TouchableOpacity>
+       */}
     </LinearGradient>
   );
 };
