@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import * as Font from 'expo-font';
+import { Link } from 'expo-router';
 
 const CaffeineWidget = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -55,74 +56,76 @@ const CaffeineWidget = () => {
   const timerColor = getTimerColor(currentTime);
 
   return (
-    <View
-      style={{
-        height: 62,
-        backgroundColor: 'black',
-        borderWidth: 1,
-        borderColor: "#141414",
-        borderRadius: 15,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-      }}
-    >
-      {/* Icon with circular background */}
-      <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginRight: 10 }}>
-        {/* Background glow image - changes based on optimal time */}
-        <Image
-          source={optimal ? 
-            require('../../assets/images/WidgetGreenBlur.png') : 
-            require('../../assets/images/WidgetRedBlur.png')
-          }
-          style={{
-            position: 'absolute',
-            width: 70,
-            height: 70,
-            resizeMode: 'contain',
-          }}
-        />
-        {/* Cup icon - changes based on optimal time */}
-        <Image
-          source={optimal ? 
-            require('../../assets/images/cup-of-coffee.png') : 
-            require('../../assets/images/cup-of-coffee(red).png')
-          }
-          style={{
-            width: 27,
-            height: 27,
-            resizeMode: 'contain',
-          }}
-        />
-      </View>
-
-      {/* Text content */}
-      <View style={{ flex: 1 }}>
-        <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>Coffee window</Text>
-        <Text style={{ 
-          color: timerColor, 
-          fontSize: 15, 
-          fontWeight: '100', 
-          fontFamily: "DMMono-Regular" 
-        }}>
-          {currentTimeFormatted}
-        </Text>
-      </View>
-
-      {/* Arrow SVG */}
-      <Svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <Link href='caffeineChart' asChild>
+      <View
+        style={{
+          height: 62,
+          backgroundColor: 'black',
+          borderWidth: 1,
+          borderColor: "#141414",
+          borderRadius: 15,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 10,
+        }}
       >
-        <Path d="M9 18l6-6-6-6" />
-      </Svg>
-    </View>
+        {/* Icon with circular background */}
+        <View style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginRight: 10 }}>
+          {/* Background glow image - changes based on optimal time */}
+          <Image
+            source={optimal ? 
+              require('../../assets/images/WidgetGreenBlur.png') : 
+              require('../../assets/images/WidgetRedBlur.png')
+            }
+            style={{
+              position: 'absolute',
+              width: 70,
+              height: 70,
+              resizeMode: 'contain',
+            }}
+          />
+          {/* Cup icon - changes based on optimal time */}
+          <Image
+            source={optimal ? 
+              require('../../assets/images/cup-of-coffee.png') : 
+              require('../../assets/images/cup-of-coffee(red).png')
+            }
+            style={{
+              width: 27,
+              height: 27,
+              resizeMode: 'contain',
+            }}
+          />
+        </View>
+
+        {/* Text content */}
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: '#fff', fontSize: 15, fontWeight: '400' }}>Coffee window</Text>
+          <Text style={{ 
+            color: timerColor, 
+            fontSize: 15, 
+            fontWeight: '100', 
+            fontFamily: "DMMono-Regular" 
+          }}>
+            {currentTimeFormatted}
+          </Text>
+        </View>
+
+        {/* Arrow SVG */}
+        <Svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <Path d="M9 18l6-6-6-6" />
+        </Svg>
+      </View>
+    </Link>
   );
 };
 
