@@ -257,12 +257,6 @@ export default function MusicScreen() {
           presentationStyle="fullScreen"
         >
           <View style={styles.playerContainer}>
-            <Image source={currentMusic?.thumbnail} style={styles.playerBackground} />
-            <LinearGradient
-              colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)']}
-              style={styles.playerGradient}
-            />
-            
             <SafeAreaView style={styles.playerContent}>
               {/* Close Button */}
               <TouchableOpacity
@@ -272,11 +266,14 @@ export default function MusicScreen() {
                 <Ionicons name="chevron-down" size={30} color="white" />
               </TouchableOpacity>
 
+              {/* Square Image */}
+              <View style={styles.imageContainer}>
+                <Image source={currentMusic?.thumbnail} style={styles.playerImage} />
+              </View>
+
               {/* Music Info */}
               <View style={styles.playerInfo}>
-                <Text style={styles.playerDate}></Text>
                 <Text style={styles.playerTitle}>{currentMusic?.title}</Text>
-                <Text style={styles.playerSource}></Text>
               </View>
 
               {/* Progress Bar */}
@@ -312,7 +309,7 @@ export default function MusicScreen() {
                 >
                   <Ionicons 
                     name={isPlaying ? "pause" : "play"} 
-                    size={32} 
+                    size={40} 
                     color="white" 
                   />
                 </TouchableOpacity>
@@ -472,56 +469,45 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000',
   },
-  playerBackground: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  playerGradient: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
   playerContent: {
     flex: 1,
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 20,
   },
   closeButton: {
     alignSelf: 'center',
     padding: 10,
+    marginBottom: 20,
+  },
+  imageContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  playerImage: {
+    width: 280,
+    height: 280,
+    borderRadius: 16,
+    resizeMode: 'cover',
   },
   playerInfo: {
     alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  playerDate: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 12,
-    marginBottom: 10,
+    marginBottom: 40,
   },
   playerTitle: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 8,
-  },
-  playerSource: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 14,
+    lineHeight: 24,
   },
   progressContainer: {
-    marginBottom: 40,
+    marginBottom: 50,
   },
   progressBar: {
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 2,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   progressFill: {
     height: '100%',
@@ -539,8 +525,9 @@ const styles = StyleSheet.create({
   controlsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    marginBottom: 30,
+    justifyContent: 'space-between',
+    marginBottom: 40,
+    paddingHorizontal: 10,
   },
   controlButton: {
     alignItems: 'center',
@@ -549,12 +536,10 @@ const styles = StyleSheet.create({
     height: 50,
   },
   playButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    width: 80,
+    height: 80,
   },
   speedText: {
     color: '#fff',
@@ -589,5 +574,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 2,
   },
-
 });
