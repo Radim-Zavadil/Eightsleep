@@ -56,6 +56,9 @@ export default function MusicScreen() {
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showPlayer, setShowPlayer] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1); // Speed control state
+  const [volume, setVolume] = useState(0.6); // Volume control state
+  const volumeBarRef = useRef(null);
 
   const categories = ['All', 'Meditation', 'Stress', 'Sleep'];
 
@@ -75,7 +78,11 @@ export default function MusicScreen() {
       
       const { sound: newSound } = await Audio.Sound.createAsync(
         music.audioFile,
-        { shouldPlay: true }
+        { 
+          shouldPlay: true,
+          rate: playbackSpeed,
+          volume: volume
+        }
       );
       
       setSound(newSound);
@@ -103,6 +110,67 @@ export default function MusicScreen() {
         await sound.playAsync();
       }
     }
+  };
+
+  // Toggle playback speed between 1x and 2x
+  const toggleSpeed = async () => {
+    const newSpeed = playbackSpeed === 1 ? 2 : 1;
+    setPlaybackSpeed(newSpeed);
+    
+    if (sound) {
+      try {
+        await sound.setRateAsync(newSpeed, true);
+      } catch (error) {
+        console.error('Error setting playback rate:', error);
+      }
+    }
+  };
+
+  // Skip backward by 15 seconds
+  const skipBackward = async () => {
+    if (sound) {
+      try {
+        const newPosition = Math.max(0, position - 15000); // 15 seconds in milliseconds
+        await sound.setPositionAsync(newPosition);
+      } catch (error) {
+        console.error('Error skipping backward:', error);
+      }
+    }
+  };
+
+  // Skip forward by 30 seconds
+  const skipForward = async () => {
+    if (sound) {
+      try {
+        const newPosition = Math.min(duration, position + 30000); // 30 seconds in milliseconds
+        await sound.setPositionAsync(newPosition);
+      } catch (error) {
+        console.error('Error skipping forward:', error);
+      }
+    }
+  };
+
+  // Adjust volume
+  const adjustVolume = async (newVolume) => {
+    const clampedVolume = Math.max(0, Math.min(1, newVolume));
+    setVolume(clampedVolume);
+    
+    if (sound) {
+      try {
+        await sound.setVolumeAsync(clampedVolume);
+      } catch (error) {
+        console.error('Error setting volume:', error);
+      }
+    }
+  };
+
+  // Handle volume bar touch and drag
+  const handleVolumeBarTouch = (event) => {
+    volumeBarRef.current?.measure((x, y, width, height, pageX, pageY) => {
+      const touchX = event.nativeEvent.locationX;
+      const newVolume = Math.max(0, Math.min(1, touchX / width));
+      adjustVolume(newVolume);
+    });
   };
 
   const formatTime = (milliseconds) => {
@@ -142,140 +210,150 @@ export default function MusicScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <SafeAreaView style={styles.safeArea}>
-        {/* Filter Tabs */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterContainer}
-          contentContainerStyle={styles.filterContentContainer}
-        >
-          {categories.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.filterTab,
-                selectedCategory === category && styles.activeFilterTab,
-              ]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text
+        <StatusBar barStyle="light-content" />
+        <SafeAreaView style={styles.safeArea}>
+          {/* Filter Tabs */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterContainer}
+            contentContainerStyle={styles.filterContentContainer}
+          >
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category}
                 style={[
-                  styles.filterText,
-                  selectedCategory === category && styles.activeFilterText,
+                  styles.filterTab,
+                  selectedCategory === category && styles.activeFilterTab,
                 ]}
+                onPress={() => setSelectedCategory(category)}
               >
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Music List */}
-        <ScrollView
-          style={styles.musicList}
-          contentContainerStyle={styles.musicListContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {filteredMusic.map(renderMusicCard)}
-        </ScrollView>
-      </SafeAreaView>
-
-      {/* Full Screen Player Modal */}
-      <Modal
-        visible={showPlayer && currentMusic}
-        animationType="slide"
-        presentationStyle="fullScreen"
-      >
-        <View style={styles.playerContainer}>
-          <Image source={currentMusic?.thumbnail} style={styles.playerBackground} />
-          <LinearGradient
-            colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)']}
-            style={styles.playerGradient}
-          />
-          
-          <SafeAreaView style={styles.playerContent}>
-            {/* Close Button */}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowPlayer(false)}
-            >
-              <Ionicons name="chevron-down" size={30} color="white" />
-            </TouchableOpacity>
-
-            {/* Music Info */}
-            <View style={styles.playerInfo}>
-              <Text style={styles.playerDate}>MAY 15</Text>
-              <Text style={styles.playerTitle}>{currentMusic?.title}</Text>
-              <Text style={styles.playerSource}>Radio Minerva</Text>
-            </View>
-
-            {/* Progress Bar */}
-            <View style={styles.progressContainer}>
-              <View style={styles.progressBar}>
-                <View 
+                <Text
                   style={[
-                    styles.progressFill,
-                    { width: `${duration ? (position / duration) * 100 : 0}%` }
-                  ]} 
-                />
-              </View>
-              <View style={styles.timeContainer}>
-                <Text style={styles.timeText}>{formatTime(position)}</Text>
-                <Text style={styles.timeText}>-{formatTime(duration - position)}</Text>
-              </View>
-            </View>
+                    styles.filterText,
+                    selectedCategory === category && styles.activeFilterText,
+                  ]}
+                >
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-            {/* Control Buttons */}
-            <View style={styles.controlsContainer}>
-              <TouchableOpacity style={styles.controlButton}>
-                <Text style={styles.speedText}>1x</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.controlButton}>
-                <Ionicons name="play-skip-back" size={24} color="white" />
-                <Text style={styles.skipText}>15</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.playButton}
-                onPress={pauseResumeSound}
+          {/* Music List */}
+          <ScrollView
+            style={styles.musicList}
+            contentContainerStyle={styles.musicListContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {filteredMusic.map(renderMusicCard)}
+          </ScrollView>
+        </SafeAreaView>
+
+        {/* Full Screen Player Modal */}
+        <Modal
+          visible={showPlayer && currentMusic}
+          animationType="slide"
+          presentationStyle="fullScreen"
+        >
+          <View style={styles.playerContainer}>
+            <Image source={currentMusic?.thumbnail} style={styles.playerBackground} />
+            <LinearGradient
+              colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.8)']}
+              style={styles.playerGradient}
+            />
+            
+            <SafeAreaView style={styles.playerContent}>
+              {/* Close Button */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowPlayer(false)}
               >
-                <Ionicons 
-                  name={isPlaying ? "pause" : "play"} 
-                  size={32} 
-                  color="white" 
-                />
+                <Ionicons name="chevron-down" size={30} color="white" />
               </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.controlButton}>
-                <Ionicons name="play-skip-forward" size={24} color="white" />
-                <Text style={styles.skipText}>30</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.controlButton}>
-                <Ionicons name="moon" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
 
-            {/* Volume Control */}
-            <View style={styles.volumeContainer}>
-              <TouchableOpacity>
-                <Ionicons name="volume-low" size={20} color="white" />
-              </TouchableOpacity>
-              <View style={styles.volumeBar}>
-                <View style={styles.volumeFill} />
+              {/* Music Info */}
+              <View style={styles.playerInfo}>
+                <Text style={styles.playerDate}></Text>
+                <Text style={styles.playerTitle}>{currentMusic?.title}</Text>
+                <Text style={styles.playerSource}></Text>
               </View>
-              <TouchableOpacity>
-                <Ionicons name="volume-high" size={20} color="white" />
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </View>
-      </Modal>
-    </ThemedView>
-  );
+
+              {/* Progress Bar */}
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBar}>
+                  <View 
+                    style={[
+                      styles.progressFill,
+                      { width: `${duration ? (position / duration) * 100 : 0}%` }
+                    ]} 
+                  />
+                </View>
+                <View style={styles.timeContainer}>
+                  <Text style={styles.timeText}>{formatTime(position)}</Text>
+                  <Text style={styles.timeText}>-{formatTime(duration - position)}</Text>
+                </View>
+              </View>
+
+              {/* Control Buttons */}
+              <View style={styles.controlsContainer}>
+                <TouchableOpacity style={styles.controlButton} onPress={toggleSpeed}>
+                  <Text style={styles.speedText}>{playbackSpeed}x</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.controlButton} onPress={skipBackward}>
+                  <Ionicons name="play-skip-back" size={24} color="white" />
+                  <Text style={styles.skipText}>15</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.playButton}
+                  onPress={pauseResumeSound}
+                >
+                  <Ionicons 
+                    name={isPlaying ? "pause" : "play"} 
+                    size={32} 
+                    color="white" 
+                  />
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.controlButton} onPress={skipForward}>
+                  <Ionicons name="play-skip-forward" size={24} color="white" />
+                  <Text style={styles.skipText}>30</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.controlButton}>
+                  <Ionicons name="moon" size={24} color="white" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Volume Control with Draggable Bar */}
+              <View style={styles.volumeContainer}>
+                <TouchableOpacity onPress={() => adjustVolume(volume - 0.1)}>
+                  <Ionicons name="volume-low" size={20} color="white" />
+                </TouchableOpacity>
+                <View 
+                  ref={volumeBarRef}
+                  style={styles.volumeBarContainer}
+                  onStartShouldSetResponder={() => true}
+                  onMoveShouldSetResponder={() => true}
+                  onResponderGrant={handleVolumeBarTouch}
+                  onResponderMove={handleVolumeBarTouch}
+                >
+                  <View style={styles.volumeBar}>
+                    <View style={[styles.volumeFill, { width: `${volume * 100}%` }]} />
+                  </View>
+
+                </View>
+                <TouchableOpacity onPress={() => adjustVolume(volume + 0.1)}>
+                  <Ionicons name="volume-high" size={20} color="white" />
+                </TouchableOpacity>
+              </View>
+            </SafeAreaView>
+          </View>
+        </Modal>
+      </ThemedView>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -347,6 +425,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     padding: 20,
+    marginBottom: 12
   },
   categoryBadge: {
     flexDirection: 'row',
@@ -381,11 +460,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
+    textAlign: "center"
   },
   musicDescription: {
     color: 'rgba(255,255,255,0.8)',
     fontSize: 14,
     lineHeight: 20,
+    textAlign: "center"
   },
   playerContainer: {
     flex: 1,
@@ -491,17 +572,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
   },
-  volumeBar: {
+  volumeBarContainer: {
     flex: 1,
+    height: 30,
+    justifyContent: 'center',
+    marginHorizontal: 15,
+    position: 'relative',
+  },
+  volumeBar: {
     height: 4,
     backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 2,
-    marginHorizontal: 15,
   },
   volumeFill: {
-    width: '60%',
     height: '100%',
     backgroundColor: '#fff',
     borderRadius: 2,
   },
+
 });
