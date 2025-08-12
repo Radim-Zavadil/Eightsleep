@@ -484,8 +484,8 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   playerImage: {
-    width: 280,
-    height: 280,
+    width: 400,
+    height: 470,
     borderRadius: 16,
     resizeMode: 'cover',
   },
@@ -501,7 +501,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   progressContainer: {
-    marginBottom: 50,
+    marginBottom: 30,
+    marginHorizontal: 30
   },
   progressBar: {
     height: 4,
