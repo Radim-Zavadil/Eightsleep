@@ -63,7 +63,7 @@ export default function TabLayout() {
                 style={StyleSheet.absoluteFill}
               >
                 <View style={{ 
-                  backgroundColor: 'rgba(21, 21, 21, 0.5)', // Semi-transparent background
+                  backgroundColor: 'rgba(21, 21, 21, 1)', // Semi-transparent background
                   ...StyleSheet.absoluteFillObject 
                 }} />
               </BlurView>
